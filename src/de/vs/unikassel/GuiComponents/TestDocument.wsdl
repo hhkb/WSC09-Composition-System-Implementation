@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.vs.uni-kassel.de/kirchhoff/TestServices/BuechershopServices/Buchservice1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Buchservice1" targetNamespace="http://www.vs.uni-kassel.de/kirchhoff/TestServices/BuechershopServices/Buchservice1" xmlns:wsdl-ext="http://www.vs.uni-kassel.de/kirchhoff/wsdl_extensions">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.vs.uni-kassel.de/kirchhoff/TestServices/BuechershopServices/Buchservice1">
+      <xsd:element name="getBook">
+        <xsd:complexType>
+          <xsd:sequence>
+          	<xsd:element name="Titel" type="xsd:string"	wsdl-ext:id="getBookTitel" />
+            <xsd:element name="Autor" type="xsd:string" wsdl-ext:id="getBookAutor"></xsd:element>
+            <xsd:element name="maxPreis" type="xsd:float" wsdl-ext:id="getBookMaxPreis"></xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="getBookResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+          	<xsd:element name="Buchinformationen" type="tns:Buchinformationen" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>    
+      <xsd:complexType name="Buchinformationen">
+      	<xsd:sequence>
+      		<xsd:element name="Titel" type="xsd:string"	wsdl-ext:id="responseTitel"></xsd:element>
+      		<xsd:element name="Autor" type="xsd:string"	wsdl-ext:id="responseAutor"></xsd:element>
+      		<xsd:element name="Verlag" type="xsd:string" wsdl-ext:id="responseVerlag"></xsd:element>
+      		<xsd:element name="ArtikelNr" type="xsd:int" wsdl-ext:id="responseArtikelNr"></xsd:element>
+      		<xsd:element name="Versandinformationen" type="tns:Versandinformationen"></xsd:element>
+      		<xsd:element name="Erscheinungsdatum" type="xsd:string" wsdl-ext:id="responseErscheinungsdatum"></xsd:element>
+      		<xsd:element name="Gebunden" type="xsd:boolean" wsdl-ext:id="responseGebunden"></xsd:element>
+      		<xsd:element name="ISBN" type="xsd:string" wsdl-ext:id="responseISBN"></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+    
+      <xsd:complexType name="Versandinformationen">
+      	<xsd:sequence>
+      		<xsd:element name="Preis" type="xsd:float" wsdl-ext:id="responsePreis"></xsd:element>
+      		<xsd:element name="Versandkosten" type="xsd:float" wsdl-ext:id="responseVersandkosten"></xsd:element>
+      		<xsd:element name="Lieferdatum" type="xsd:string" wsdl-ext:id="responseLieferdatum"></xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="buyBook">
+      	<xsd:complexType>
+      		<xsd:sequence>
+      			<xsd:element name="ArtikelNr" type="xsd:string" wsdl-ext:id="buyBookArtikelNr"></xsd:element>
+      			<xsd:element name="Lieferadresse" type="tns:Lieferadresse"></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+      <xsd:element name="buyBookResponse">
+      	<xsd:complexType>
+      		<xsd:sequence>
+      			<xsd:element name="BestellungErfolgreich" type="xsd:boolean" wsdl-ext:id="bestellungErfolgreich"></xsd:element>
+      		</xsd:sequence>
+      	</xsd:complexType>
+      </xsd:element>
+    
+      <xsd:complexType name="Lieferadresse">
+      	<xsd:sequence>
+      		<xsd:element name="Vorname" type="xsd:string" wsdl-ext:id="vorname"></xsd:element>
+      		<xsd:element name="Nachname" type="xsd:string" wsdl-ext:id="nachname"></xsd:element>
+      		<xsd:element name="Strasse" type="xsd:string" wsdl-ext:id="strasse"></xsd:element>
+            <xsd:element name="Hausnummer" type="xsd:int" wsdl-ext:id="hausnummer"></xsd:element>
+            <xsd:element name="Postleitzahl" type="xsd:int" wsdl-ext:id="postleitzahl"></xsd:element>
+      		<xsd:element name="Stadt" type="xsd:string"	wsdl-ext:id="stadt">
+      		</xsd:element>
+      	</xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="getBookRequest">
+    <wsdl:part element="tns:getBook" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="getBookResponse">
+    <wsdl:part element="tns:getBookResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="buyBookRequest">
+  	<wsdl:part name="parameters" element="tns:buyBook"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="buyBookResponse">
+  	<wsdl:part name="parameters" element="tns:buyBookResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="Buchservice1">
+    <wsdl:operation name="getBook">
+	  <wsdl-ext:operationId wsdl-ext:id="getBook"/>
+      <wsdl:input message="tns:getBookRequest" wsdl-ext:id="getBookRequest"/>
+      <wsdl:output message="tns:getBookResponse" wsdl-ext:id="getBookResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="buyBook">
+    	<wsdl-ext:operationId wsdl-ext:id="buyBook"/>
+    	<wsdl:input message="tns:buyBookRequest" wsdl-ext:id="buyBookRequest"></wsdl:input>
+    	<wsdl:output message="tns:buyBookResponse" wsdl-ext:id="buyBookResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="Buchservice1SOAP" type="tns:Buchservice1">  	<soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />  	<wsdl:operation name="getBook">  		<soap:operation
+  			soapAction="http://www.vs.uni-kassel.de/kirchhoff/TestServices/BuechershopServices/Buchservice1/getBook" />  		<wsdl:input>  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="buyBook">
+  		<soap:operation
+  			soapAction="http://www.vs.uni-kassel.de/kirchhoff/TestServices/BuechershopServices/Buchservice1/buyBook" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Buchservice1">
+    <wsdl:port binding="tns:Buchservice1SOAP" name="Buchservice1SOAP">
+      <soap:address location="http://localhost:8080/axis2/services/Buchservice1"/>
+    </wsdl:port>
+  </wsdl:service>
+  
+  <wsdl-ext:semExtension>
+	<wsdl-ext:semOperationExt id="getBook">		
+	</wsdl-ext:semOperationExt> 
+	<wsdl-ext:semMessageExt id="getBookRequest">
+		<wsdl-ext:semPartExt name="parameters">
+			<wsdl-ext:semExt id="getBookTitel">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Titel</wsdl-ext:ontologyRef>					
+			</wsdl-ext:semExt>	
+			<wsdl-ext:semExt id="getBookAutor">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Autor</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="getBookMaxPreis">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Preis</wsdl-ext:ontologyRef>
+				<wsdl-ext:optional>true</wsdl-ext:optional>
+				<wsdl-ext:unit>http://www.vs.uni-kassel.de/kirchhoff/WaehrungsOntology.owl#Dollar</wsdl-ext:unit>
+			</wsdl-ext:semExt>
+		</wsdl-ext:semPartExt>
+	</wsdl-ext:semMessageExt>
+	<wsdl-ext:semMessageExt id="getBookResponse">
+		<wsdl-ext:semPartExt name="parameters">	
+			<wsdl-ext:semExt id="responseTitel">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Titel</wsdl-ext:ontologyRef>					
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="responseAutor">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Autor</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="responseVerlag">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Verlag</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="responseArtikelNr">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#ArtikelNr</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>			
+			<wsdl-ext:semExt id="responsePreis">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Preis</wsdl-ext:ontologyRef>
+				<wsdl-ext:unit>http://www.vs.uni-kassel.de/kirchhoff/WaehrungsOntology.owl#Dollar</wsdl-ext:unit>
+			</wsdl-ext:semExt>			
+			<wsdl-ext:semExt id="responseVersandkosten">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Versandkosten</wsdl-ext:ontologyRef>
+				<wsdl-ext:unit>http://www.vs.uni-kassel.de/kirchhoff/WaehrungsOntology.owl#Dollar</wsdl-ext:unit>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="responseLieferdatum">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Lieferdatum</wsdl-ext:ontologyRef>				
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="responseErscheinungsdatum">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Erscheinungsdatum</wsdl-ext:ontologyRef>				
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="responseGebunden">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#Einband</wsdl-ext:ontologyRef>				
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="responseISBN">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#ISBN</wsdl-ext:ontologyRef>				
+			</wsdl-ext:semExt>
+		</wsdl-ext:semPartExt>
+	</wsdl-ext:semMessageExt>   
+  <wsdl-ext:semOperationExt id="buyBook">
+		<wsdl-ext:priority>3</wsdl-ext:priority>		
+	</wsdl-ext:semOperationExt>	
+	<wsdl-ext:semMessageExt id="buyBookRequest">
+		<wsdl-ext:semPartExt name="parameters">
+			<wsdl-ext:semExt id="buyBookArtikelNr">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BuchOntology.owl#ArtikelNr</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="vorname">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/KontaktOntology.owl#Vorname</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="nachname">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/KontaktOntology.owl#Nachname</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="strasse">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/KontaktOntology.owl#Strasse</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="hausnummer">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/KontaktOntology.owl#Hausnummer</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="postleitzahl">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/KontaktOntology.owl#Postleitzahl</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+			<wsdl-ext:semExt id="stadt">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/KontaktOntology.owl#Stadt</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+		</wsdl-ext:semPartExt>
+	</wsdl-ext:semMessageExt>
+
+	<wsdl-ext:semMessageExt id="buyBookResponse">
+		<wsdl-ext:semPartExt name="parameters">
+			<wsdl-ext:semExt id="bestellungErfolgreich">
+				<wsdl-ext:ontologyRef>http://www.vs.uni-kassel.de/kirchhoff/BestellungsOntology.owl#Bestellungsabschluss</wsdl-ext:ontologyRef>
+			</wsdl-ext:semExt>
+		</wsdl-ext:semPartExt>
+	</wsdl-ext:semMessageExt>
+  </wsdl-ext:semExtension>
+</wsdl:definitions>

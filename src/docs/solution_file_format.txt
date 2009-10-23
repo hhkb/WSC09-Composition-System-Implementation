@@ -1,0 +1,61 @@
+Bei der BPEL-Anpassung habe ich vorerst auf
+Sequenzen/Parallel verzichtet, sondern die
+Graphen direkt nach diesem Link-Prinzip
+gemacht, weil man das leichter nachvollziehen
+kann.
+
+Aber jetzt zur Beschreibung des Lösungsformats.
+
++ problemStructure        Los geht es mit dem Tag problemStructure,
+|                         der Wurzel unseres Dokuments
+|
+++++ task                 Der Tag task beeinhaltet die Aufgabe, wie
+| |                       sie später an die Composer geschickt werden
+| |
+| ++ provided             provided und wanted beinhalten <concept> tags
+| ++ wanted               mit den gegebenen und gesuchten Konzepten
+|
+++++ solutions            solutions beeinhaltet die einzelnen
+  |                       Basislösungen. Es kann mehrere Basislösungen
+  |                       verschiedener Länge geben.
+  |
+  |++ solution            Eine einzelne Basislösung. Jede Basislösung
+    |                     hat eine bestimmte Kette und folgt einer
+    |                     abstrakten Struktur
+    |
+    |++ flow              Eine Menge von abstrakten Servicebeschreibungen,
+      |                   wird später mit <sequence> und <parallel> Elementen
+      |                   erweitert
+      |
+      |++ serviceDesc     Eine abstrakte Servicebeschreibung.
+        |
+        |++ abstraction   Hier die eigentliche Abstraktion: Die Input- und
+        | |++ input       Outputkonzepte, die alle solche Services als Instanzen
+        | |++ output      dann anbieten, als <concept>-tags
+        |
+        |++ realizations  Eine Liste mit Services, die höchstens die Konzepte
+        | |               von input brauchen und mindestens die von output
+        | |++service      liefern. Die können ggf. auch mehr, anderes Zeug liefern.
+        |                 Es kann mehrere in dieser Hinsicht kompatible Services
+        |                 pro Stufe geben.
+        |
+        |++ dependencies  Die Abhängigkeiten zu und von dieser Stufe.
+          |++ provides    Der Name eines ausgehenden Links (max. 1)
+          |++ requires    Der Name eines eingehenden Links (>= 0)
+                          Eine Servicestufe, die <requires name="x"> beinhaltet,
+                          kann erst nach einer Servicestufe, die <provides name="x">
+                          hat, ausgeführt werden.                 
+
+
+Achso, ja, ehe ich es vergesse:
+
+Der Graph ist schon "minimiert", d.h. wenn Service A Konzept X liefert, 
+Service B liefert Y und braucht X und Service C braucht X und Y, dann entsteht
+
+A: provides 1
+B: requires 1
+   provides 2
+C: requires 2
+
+Das "requires 1" wird gekürzt, da dass ja dann sowieso gegeben ist.
+Dieses Kürzen kann ich auf Wunsch aber auch wieder ausschalten.

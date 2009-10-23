@@ -1,0 +1,10 @@
+set data style lines
+set surface
+set dgrid 50,50,50
+set hidden3d
+
+cd 'e:'
+set terminal emf
+set output 'first.emf'
+
+splot 'e:\series\series1.txt'

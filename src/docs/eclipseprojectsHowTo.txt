@@ -1,0 +1,53 @@
+There are 5 projects for the Web Service Challenge 2008
+
+-Web Service Challenge
+
+The root project with the sources for the testsetgenerator and solutionchecker. 
+Also contains the documentation in folder /doc
+
+-Web Service Challenge Competition
+
+The project containing the example server implementation and client gui.
+
+-Web Service Challenge Generator UI
+
+Contains the generator gui and WSDL-, OWL- and BPEL-Generator binaries.
+
+-Web Service Challenge Sources
+
+Several source files and datastructures programmed by Thomas Weise.
+
+
+Project Dependencies:
+-Web Service Challenge sources
+
+Needs no other project.
+
+-Web Service Challenge
+
+Is in need (Java Build Path/Projects) of the projects:
+- Web Service Challenge Sources
+
+Please add this project in the build path.
+
+-Web Service Challenge Competition
+
+Is in need (Java Build Path/Projects) of the projects:
+-Web Service Challenge
+
+Please add this projects in the build path.
+
+-Web Service Challenge Competition
+
+Is in need (Java Build Path/Projects) of the projects:
+-Web Service Challenge
+-Web Service Challenge Competition
+
+Is in need (Java Build Path/Libraries) of the libraries:
+-JDom
+-Xalan
+-Xerces
+
+These libraries can be found in the folder /lib
+
+Please add this projects and libraries in the build path.

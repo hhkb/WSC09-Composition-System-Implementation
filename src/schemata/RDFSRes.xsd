@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns="http://www.w3.org/2000/01/rdf-schema#" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" targetNamespace="http://www.w3.org/2000/01/rdf-schema#" elementFormDefault="qualified" attributeFormDefault="qualified">
+	<xsd:import namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#" schemaLocation="RDFRes.xsd"/>
+	<xsd:complexType name="subClassOfType">
+		<xsd:attribute ref="rdf:resource"/>
+	</xsd:complexType>
+</xsd:schema>

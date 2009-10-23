@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://www.w3.org/1999/02//22-rdf-syntax-ns#"
+    xmlns="http://www.w3.org/1999/02//22-rdf-syntax-ns#"    
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    elementFormDefault="qualified" >
+  
+  <xsd:import namespace="http://www.w3.org/2002/07/owl#" schemaLocation="OWLRes.xsd"/>
+  
+  <xsd:element name="RDF" type="RDF_Type"/>
+  
+  <xsd:complexType name="RDF_Type">
+    <xsd:sequence>
+      <xsd:element name="Ontology" type="owl:OntologyType"/>
+      <xsd:element name="Class" type="owl:ClassType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="Thing" type="owl:ThingType" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  
+</xsd:schema>
+
+
+

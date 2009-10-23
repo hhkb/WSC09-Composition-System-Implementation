@@ -1,0 +1,1 @@
+The depth of a solution is the amount of services that is needed to solve the problem.

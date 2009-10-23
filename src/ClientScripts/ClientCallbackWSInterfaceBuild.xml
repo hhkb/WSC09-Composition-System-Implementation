@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     01.11.2007 15:54:28                                                        
+
+     project    
+     description
+     
+     This script generates server and client code for JaxWS. The WS is
+     the Web Service Interface for the proxy control of the server container. 
+                   
+     Bleul                                                                
+     ====================================================================== -->
+
+<project basedir="." name="project" default="default">
+   
+	<property name="src" location="../src/"/>		
+	
+	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+			<classpath>
+				<fileset dir="../../../SETEK Libraries/Collected Libraries/">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</taskdef>
+		
+		<taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+		 	<classpath>
+				<fileset dir="../../../SETEK Libraries/Collected Libraries/">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</taskdef>		
+	
+    <!-- ================================= 
+          target: default              
+         ================================= -->     
+    
+    <target name="default"/>    	
+    
+    <!-- ================================= 
+          target: BuiltClientCallbackWSInterface
+         ================================= -->     
+    
+    <target name="BuiltClientCallbackWSInterface">
+    	<!-- WSGen generates server artifacts for JaxWS Deployment in the JRE6 and a WSDL file. -->
+    
+    	<wsgen
+    	      resourcedestdir="../../src/de/vs/unikassel/query/client/callback_interface/"
+    		  sourcedestdir="../../src"
+    		  genwsdl="true"
+    	      sei="de.vs.unikassel.query.client.callback_interface.ClientCallbackInterface"    		  
+    		  destdir="../../bin">
+    		<classpath>
+    		    <pathelement location="../../bin"/>    		    			
+    		    <fileset dir="../../../SETEK Libraries/Collected Libraries/">
+    		    	<include name="**/*.jar"/>
+    		    </fileset>				
+    		</classpath>
+    	</wsgen>    	    	
+    </target>
+    
+    <!-- ================================= 
+          target: BuiltClientCallbackInterfaceClient
+         ================================= -->     
+    
+    <target name="BuiltClientCallbackInterfaceClient">    	
+    	
+    	<delete>
+    		<fileset dir="../../src/de/vs/unikassel/query/client/callback_interface/stub/">
+    			<include name="**/*.java"/>
+    		</fileset>	
+    	</delete>
+    	
+    	<wsimport
+    		keep="true"    		
+    		sourcedestdir="../../src"
+    		destdir="../../src"    		
+    		package="de.vs.unikassel.query.client.callback_interface.stub"
+    		wsdl="../../src/de/vs/unikassel/query/client/callback_interface/ClientCallbackInterfaceService.wsdl"/>
+    	
+    	<delete>
+    	    <fileset dir="../../src/de/vs/unikassel/query/client/callback_interface/stub/">
+    	    	<include name="**/*.class"/>
+    	    </fileset>	
+    	</delete>
+    </target>
+
+</project>
+
+

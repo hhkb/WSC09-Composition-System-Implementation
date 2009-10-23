@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<Obligations
+	xmlns="http://www.ibm.com/wsla"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+		<ServiceLevelObjective name="$$EnterResponseTimeObjectiveNameHere$$">
+			<Obliged>Vienna XPress Services</Obliged>
+			<Validity>
+				<Start>2008-01-30T14:00:00</Start>
+				<End>2008-05-29T17:29:00</End>
+			</Validity>
+			<Expression>
+				<Predicate xsi:type="Less">
+					<SLAParameter>$$EnterResponsetimeSLAParameterNameHere$$</SLAParameter>
+					<Value>$$EnterResponsetimeHere$$</Value>
+				</Predicate>
+			</Expression>
+			<EvaluationEvent>NewValue</EvaluationEvent>
+		</ServiceLevelObjective>
+		
+		<ServiceLevelObjective name="$$EnterThroughputObjectiveNameHere$$">
+			<Obliged>Vienna XPress Services</Obliged>
+			<Validity>
+				<Start>2008-01-30T14:00:00</Start>
+				<End>2008-05-29T17:29:00</End>
+			</Validity>
+			<Expression>
+				<Predicate xsi:type="Greater">
+					<SLAParameter>$$EnterThroughputSLAParameterNameHere$$</SLAParameter>
+					<Value>$$EnterThroughputHere$$</Value>
+				</Predicate>
+			</Expression>
+			<EvaluationEvent>NewValue</EvaluationEvent>
+		</ServiceLevelObjective>
+
+</Obligations>

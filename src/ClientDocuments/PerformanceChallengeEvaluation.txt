@@ -1,0 +1,37 @@
+Dear WSC08 participants,
+
+Here we present the score calculation for the Web Service Challenge 2009. I cannot guarantee that we wont change or adjust the calculation until the conference but the overall metrics defined here wont change. The BPEL checking software will evaluate the results of the participant's composition system. We will evaluate the BPEL file for a solution path, its correctness regarding the challenge task.
+
+1.) We will provide 4 challenge sets and each composition system can achieve up to 18 points and no less than 0 points per challenge set. Three challenge sets will have at least one feasible solution and one challenge set will have no solution at all.
+
+2.) The time limit for solving a challenge is 5 minutes. Every composition system replying with a solution later than 5 minutes will receive 0 points for the challenge set. Otherwise we would not be able to finish the challenge with a feasible schedule.
+
+3.) The task is to find the service composition with the lowest response time which solves the challenge of the challenge set. Additionally the composition systems which also finds the service composition with the highest throughput in the fastest time will be rewarded.
+
+Score per challenge set:
+------------------------
+
++6 Points for finding the service composition with the lowest response time that solves the challenge.
+
++6 Points for finding the service composition with the highest throughput that solves the challenge
+
+
++6 Points for the composition system which finds the service composition with the lowest response time or highest throughput that solves the challenge in the fastest time.
+
++4 Points for the composition system which finds the service composition with the lowest response time or highest throughput that solves the challenge in the second fastest time.
+
++2 Points for the composition system which finds the service composition with the lowest response time or highest throughput that solves the challenge in the third fastest time.
+
+Example output of our solution checker:
+
+<result>
+ <validity numYes="4" numNo="0">All proposed BPEL processes can be executed.</validity>
+ <satisfaction numYes="4" numNo="0">All proposed BPEL processes provide all wanted output parameters.</satisfaction>
+ <solutions numYes="4" numNo="0">All proposed BPEL processes are correct solutions for the challenge.</solutions>
+ <combinations count="168492">168492 execution sequences that solve the challenge were found in total.</combinations>
+ <minLength value="2">The shortest execution sequence that solves the challenge found is 2.</minLength>
+ <minService value="3">The execution sequence involving the least number of services for solving the challenge found consists of 3 services.</minService>
+ <redundanceStat redundantServices="1">There are 1 redundant services.</redundanceStat>
+
+Best regards,
+Steffen Bleul 

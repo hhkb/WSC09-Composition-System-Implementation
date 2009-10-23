@@ -1,0 +1,1 @@
+Each entry in this table is a solution and its number indicates the depth of the solution.

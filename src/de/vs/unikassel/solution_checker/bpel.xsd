@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--W3C Schema erstellt mit XMLSpy v2005 rel. 3 U (http://www.altova.com)-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/" targetNamespace="http://schemas.xmlsoap.org/ws/2003/03/business-process/" elementFormDefault="qualified">
+	<xs:element name="case">
+		<xs:complexType>
+			<xs:choice>
+				<xs:element ref="bpel:switch"/>
+				<xs:element ref="bpel:sequence"/>
+				<xs:element ref="bpel:flow"/>			
+			</xs:choice>
+			<xs:attribute name="name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string"/>						
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="invoke">
+		<xs:complexType>
+			<xs:attribute name="name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string"/>						
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="portType" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string"/>						
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="operation" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string"/>						
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="flow">
+		<xs:complexType>
+			<xs:choice minOccurs="1" maxOccurs="unbounded">				
+				<xs:element ref="bpel:switch" minOccurs="0"/>
+				<xs:element ref="bpel:invoke" minOccurs="0"/>
+				<xs:element ref="bpel:sequence" minOccurs="0"/>
+				<xs:element ref="bpel:flow" minOccurs="0"/>				
+			</xs:choice>
+			<xs:attribute name="name">
+				<xs:simpleType>
+					<xs:restriction base="xs:string"/>											
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="process">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="sequence">									
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element ref="bpel:receive"/>
+							<xs:element name="switch">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="case" minOccurs="1" maxOccurs="unbounded">
+											<xs:complexType>
+												<xs:choice>
+													<xs:element ref="bpel:switch"/>
+													<xs:element ref="bpel:sequence"/>
+													<xs:element ref="bpel:flow"/>
+												</xs:choice>
+												<xs:attribute name="name" use="required">
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:pattern value="(Alternative-Solution)[A-Za-z0-9]*"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute name="name" use="required">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:pattern value="(SolutionAlternatives)[A-Za-z0-9]*"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="name">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="main"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="WSC08"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="targetNamespace" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:anyURI">
+						<xs:enumeration value="http://www.ws-challenge.org/WSC08CompositionSolution/"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="receive">
+		<xs:complexType>
+			<xs:attribute name="name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="receiveQuery"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="portType" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="solutionProcess"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="variable" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="query"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="sequence">
+		<xs:complexType>			
+				<xs:choice minOccurs="1" maxOccurs="unbounded">					
+					<xs:element ref="bpel:switch"/>
+					<xs:element ref="bpel:invoke"/>
+					<xs:element ref="bpel:sequence"/>
+					<xs:element ref="bpel:flow"/>					
+				</xs:choice>		
+			<xs:attribute name="name">
+				<xs:simpleType>
+					<xs:restriction base="xs:string"/>				
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="switch">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="bpel:case" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="(Alternative-Services)[A-Za-z0-9]*"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

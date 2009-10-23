@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns="http://www.w3.org/2002/07/owl#" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" targetNamespace="http://www.w3.org/2002/07/owl#" elementFormDefault="qualified" attributeFormDefault="qualified">
+	<xsd:import namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#" schemaLocation="RDFRes.xsd"/>
+	<xsd:import namespace="http://www.w3.org/2000/01/rdf-schema#" schemaLocation="RDFSRes.xsd"/>
+	<xsd:complexType name="OntologyType">
+		<xsd:attribute ref="rdf:about"/>
+	</xsd:complexType>
+	<xsd:complexType name="ClassType">
+		<xsd:sequence>
+			<xsd:element name="subClassOf" type="rdfs:subClassOfType"/>
+		</xsd:sequence>
+		<xsd:attribute ref="rdf:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="ThingType">
+		<xsd:sequence>
+			<xsd:element name="type" type="rdf:typeType"/>
+		</xsd:sequence>
+		<xsd:attribute ref="rdf:ID"/>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,5 @@
+Distributed Systems Group
+University of Kassel
+Created by Marc Kirchhoff, Thomas Weise and Steffen Bleul 
+Contact&Questions: bleul@vs.uni-kassel.de
+Homepage: http://www.vs.uni-kassel.de/

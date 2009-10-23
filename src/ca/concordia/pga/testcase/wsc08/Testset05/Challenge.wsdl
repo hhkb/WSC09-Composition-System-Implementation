@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:service="http://www.ws-challenge.org/WSC08Services/" targetNamespace="http://www.ws-challenge.org/WSC08Services/">
+  <service name="Task0Service">
+    <port binding="service:Task0SOAP" name="Task0Port">
+      <soap:address location="http://www.unknownexamplehost.ukn/" />
+    </port>
+  </service>
+  <binding name="Task0SOAP" type="service:Task0PortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="Task0Operation">
+      <soap:operation soapAction="http://www.ws-challenge.org/Task0" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+  </binding>
+  <portType name="Task0PortType">
+    <operation name="Task0Operation">
+      <input message="service:Task0RequestMessage" />
+      <output message="service:Task0ResponseMessage" />
+    </operation>
+  </portType>
+  <message name="Task0RequestMessage">
+    <part element="service:337846193" name="337846193Part" />
+    <part element="service:1431494270" name="1431494270Part" />
+    <part element="service:761711746" name="761711746Part" />
+  </message>
+  <message name="Task0ResponseMessage">
+    <part element="service:1242139244" name="1242139244Part" />
+  </message>
+  <types>
+    <xs:schema targetNamespace="http://www.ws-challenge.org/WSC08Services/">
+      <xs:element name="337846193" type="xs:string" />
+      <xs:element name="1431494270" type="xs:string" />
+      <xs:element name="761711746" type="xs:string" />
+      <xs:element name="1242139244" type="xs:string" />
+    </xs:schema>
+  </types>
+  <mece:semExtension xmlns:mece="http://www.vs.uni-kassel.de/mece">
+    <mece:semMessageExt id="Task0RequestMessage">
+      <mece:semExt id="337846193">
+        <mece:ontologyRef>http://www.ws-challenge.org/wsc08.owl#inst2037803273</mece:ontologyRef>
+      </mece:semExt>
+      <mece:semExt id="1431494270">
+        <mece:ontologyRef>http://www.ws-challenge.org/wsc08.owl#inst1172664165</mece:ontologyRef>
+      </mece:semExt>
+      <mece:semExt id="761711746">
+        <mece:ontologyRef>http://www.ws-challenge.org/wsc08.owl#inst653049846</mece:ontologyRef>
+      </mece:semExt>
+    </mece:semMessageExt>
+    <mece:semMessageExt id="Task0ResponseMessage">
+      <mece:semExt id="1242139244">
+        <mece:ontologyRef>http://www.ws-challenge.org/wsc08.owl#inst11978504</mece:ontologyRef>
+      </mece:semExt>
+    </mece:semMessageExt>
+  </mece:semExtension>
+</definitions>
+

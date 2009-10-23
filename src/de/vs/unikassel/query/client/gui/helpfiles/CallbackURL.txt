@@ -1,0 +1,2 @@
+Please enter the URL of the callback service. 
+The URL is used by the composition system to invoke the callback interface.

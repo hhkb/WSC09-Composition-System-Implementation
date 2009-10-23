@@ -1,0 +1,3 @@
+The challenge score indicates the correctness of the solution.
+This feature is not required for the Web Service Challenge!
+The correct challenge score can be found inside the rules document.

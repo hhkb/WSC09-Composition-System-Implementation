@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:mstns="http://tempuri.org/XMLSchema.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#" elementFormDefault="qualified">
+	<xsd:attribute name="resource" type="xsd:string"/>
+	<xsd:attribute name="ID" type="xsd:string"/>
+	<xsd:attribute name="about" type="xsd:string"/>
+	<xsd:complexType name="typeType">
+		<xsd:attribute ref="resource"/>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SLA xmlns="http://www.ibm.com/wsla" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="WSC Service SLA">
+
+	<!-- Definition of the Involved Parties, the signatory parties as well as the supporting ones -->
+
+	<Parties>
+		<ServiceProvider name="ACME Service Provider">
+			<Contact>
+				<Street>Vienna XPress Services</Street>
+				<City>Vienna</City>
+			</Contact>
+		</ServiceProvider>
+
+		<ServiceConsumer name="Web Service Challenge Composition Client"/>
+	</Parties>
+
+	<ServiceDefinition name="ServiceDefinitionService0" xmlns="http://www.ibm.com/wsla" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+		<Operation name="WSCDefaultOperation" xsi:type="WSDLSOAPOperationDescriptionType">
+
+			<SLAParameter name="SLAResponsetimeService0" type="long" unit="milliseconds">
+				<Metric>AverageResponseTimeMetric</Metric>
+				<Communication>
+					<Source>Vienna XPress Services</Source>
+					<Pull>ZAuditing</Pull>
+					<Push>ZAuditing</Push>
+				</Communication>
+			</SLAParameter>
+			
+			<SLAParameter name="SLAThroughputService0" type="float" unit="invocationsperminute">
+				<Metric>ThroughputMetric</Metric>
+				<Communication>
+					<Source>Vienna XPress Services</Source>
+					<Pull>ZAuditing</Pull>
+					<Push>ZAuditing</Push>
+				</Communication>
+			</SLAParameter>
+
+			<Metric name="AverageResponseTimeMetric" type="double" unit="milliseconds">
+				<Source>Vienna XPress Services</Source>
+				<Function resultType="double" xsi:type="Average">
+					<Function resultType="long" xsi:type="QConstructor">
+						<Metric>ResponseTimeMetric</Metric>						
+						<Window>100</Window>
+					</Function>
+				</Function>
+			</Metric>
+
+			<Metric name="ResponseTimeMetric" type="long" unit="milliseconds">
+				<Source>Vienna XPress Services</Source>
+				<MeasurementDirective name="ResponseTime" resultType="long" xsi:type="GenericQoSDimension">
+					<SourceURI>http://192.168.143.245:7438/ResponseTime</SourceURI>
+				</MeasurementDirective>
+			</Metric>
+			
+			<Metric name="ThroughputMetric" type="long" unit="dollar">
+				<Source>Vienna XPress Services</Source>
+				<MeasurementDirective name="Price" resultType="long" xsi:type="GenericQoSDimension">
+					<SourceURI>http://192.168.143.245:7438/Throughput</SourceURI>
+				</MeasurementDirective>
+			</Metric>
+			
+			<WSDLFile>SLAMonitorTestService.wsdl</WSDLFile>
+			<SOAPBindingName>WSCServiceBindingService0</SOAPBindingName>
+			<SOAPOperationName>WSCServiceOperationnameService0</SOAPOperationName>
+		</Operation>
+
+	</ServiceDefinition>
+	<Obligations>
+		<ServiceLevelObjective name="SLOParameterService0">
+			<Obliged>Vienna XPress Services</Obliged>
+			<Validity>
+				<Start>2008-01-30T14:00:00</Start>
+				<End>2008-05-29T17:29:00</End>
+			</Validity>
+			<Expression>
+				<Predicate xsi:type="Less">
+					<SLAParameter>SLAResponsetimeService0</SLAParameter>
+					<Value>200</Value>
+				</Predicate>
+			</Expression>
+			<EvaluationEvent>NewValue</EvaluationEvent>
+		</ServiceLevelObjective><ServiceLevelObjective name="SLOParameterService0">
+			<Obliged>Vienna XPress Services</Obliged>
+			<Validity>
+				<Start>2008-01-30T14:00:00</Start>
+				<End>2008-05-29T17:29:00</End>
+			</Validity>
+			<Expression>
+				<Predicate xsi:type="Greater">
+					<SLAParameter>SLAThroughputService0</SLAParameter>
+					<Value>1000</Value>
+				</Predicate>
+			</Expression>
+			<EvaluationEvent>NewValue</EvaluationEvent>
+		</ServiceLevelObjective>
+		<ActionGuarantee name="AverageResponseTimeGuarantee">
+			<Obliged>Vienna XPress Services</Obliged>
+			<Expression>
+				<Predicate xsi:type="Violation">
+					<ServiceLevelObjective>SLOParameterService0</ServiceLevelObjective>
+				</Predicate>
+			</Expression>
+			<EvaluationEvent>NewValue</EvaluationEvent>
+			<QualifiedAction>
+				<Party>Vienna XPress Services</Party>
+				<Action actionName="ResponseTimeTooHigh" xsi:type="PenaltyType">
+					<Quotient>100.0</Quotient>
+					<Amount>0.01</Amount>
+					<Currency>DOLLAR</Currency>
+					<CausingGuarantee>ResponsetimeGuarantee</CausingGuarantee>
+					<SLAParameter>AverageResponseTime</SLAParameter>
+				</Action>
+			</QualifiedAction>
+			<ExecutionModality>Always</ExecutionModality>
+		</ActionGuarantee>
+
+		<ActionGuarantee name="CostGuarantee">
+			<Obliged>Vienna XPress Services</Obliged>
+			<Expression>
+				<Predicate xsi:type="Violation">
+					<ServiceLevelObjective>SLOParameterService0</ServiceLevelObjective>
+				</Predicate>
+			</Expression>
+			<EvaluationEvent>NewValue</EvaluationEvent>
+			<QualifiedAction>
+				<Party>Vienna XPress Services</Party>
+				<Action actionName="ThroughputTimeTooHigh" xsi:type="PenaltyType">
+					<Quotient>1000</Quotient>
+					<Amount>0.1</Amount>
+					<Currency>DOLLAR</Currency>
+					<CausingGuarantee>CostGuarantee</CausingGuarantee>
+					<SLAParameter>Cost</SLAParameter>
+				</Action>
+			</QualifiedAction>
+			<ExecutionModality>Always</ExecutionModality>
+		</ActionGuarantee>
+	</Obligations>
+	</Obligations>
+</SLA>

@@ -1,0 +1,7 @@
+The VM cannot allocate enough memory. At least 500MB should be allocated for the solution generator.
+
+Please restart the GUI and the VM with the parameters:
+-Xms1024m
+-Xmx1024m
+Example:
+java -Xms1024m -Xmx1024m -jar ChallengeSoftware.jar

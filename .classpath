@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/JVM 1.6.0"/>
+	<classpathentry kind="lib" path="/Users/ericzhao/Desktop/JavaLibrary/jdom/build/jdom.jar"/>
+	<classpathentry kind="lib" path="/Users/ericzhao/Desktop/JavaLibrary/xerces-2_9_1/resolver.jar"/>
+	<classpathentry kind="lib" path="/Users/ericzhao/Desktop/JavaLibrary/xerces-2_9_1/serializer.jar"/>
+	<classpathentry kind="lib" path="/Users/ericzhao/Desktop/JavaLibrary/xerces-2_9_1/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="/Users/ericzhao/Desktop/JavaLibrary/xerces-2_9_1/xercesSamples.jar"/>
+	<classpathentry kind="lib" path="/Users/ericzhao/Desktop/JavaLibrary/xerces-2_9_1/xml-apis.jar"/>
+	<classpathentry kind="lib" path="/Users/ericzhao/Desktop/JavaLibrary/dom4j-1.6.1/dom4j-1.6.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/Users/ericzhao/Desktop/JavaLibrary/dom4j-1.6.1/docs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

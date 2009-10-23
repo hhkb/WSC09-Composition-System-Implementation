@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+
+<ServiceDefinition 
+	xmlns="http://www.ibm.com/wsla"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	name="$$EnterServiceDefinitionNameHere$$" >
+
+		<Operation name="WSCDefaultOperation" xsi:type="WSDLSOAPOperationDescriptionType">
+
+			<SLAParameter name="$$EnterResponsetimeSLAParameterNameHere$$" type="long" unit="milliseconds">
+				<Metric>AverageResponseTimeMetric</Metric>
+				<Communication>
+					<Source>Vienna XPress Services</Source>
+					<Pull>ZAuditing</Pull>
+					<Push>ZAuditing</Push>
+				</Communication>
+			</SLAParameter>
+			
+			<SLAParameter name="$$EnterThroughputSLAParameterNameHere$$" type="float" unit="invocationsperminute">
+				<Metric>ThroughputMetric</Metric>
+				<Communication>
+					<Source>Vienna XPress Services</Source>
+					<Pull>ZAuditing</Pull>
+					<Push>ZAuditing</Push>
+				</Communication>
+			</SLAParameter>
+
+			<Metric name="AverageResponseTimeMetric" type="double" unit="milliseconds">
+				<Source>Vienna XPress Services</Source>
+				<Function xsi:type="Average" resultType="double">
+					<Function xsi:type="QConstructor" resultType="long">
+						<Metric>ResponseTimeMetric</Metric>						
+						<Window>100</Window>
+					</Function>
+				</Function>
+			</Metric>
+
+			<Metric name="ResponseTimeMetric" type="long" unit="milliseconds">
+				<Source>Vienna XPress Services</Source>
+				<MeasurementDirective xsi:type="GenericQoSDimension" name="ResponseTime" resultType="long">
+					<SourceURI>$$EnterResponsetimeIPHere$$</SourceURI>
+				</MeasurementDirective>
+			</Metric>
+			
+			<Metric name="ThroughputMetric" type="long" unit="dollar">
+				<Source>Vienna XPress Services</Source>
+				<MeasurementDirective xsi:type="GenericQoSDimension" name="Price" resultType="long">
+					<SourceURI>$$EnterPriceIPHere$$</SourceURI>
+				</MeasurementDirective>
+			</Metric>
+			
+			<WSDLFile>SLAMonitorTestService.wsdl</WSDLFile>
+			<SOAPBindingName>$$enterBindingNameHere$$</SOAPBindingName>
+			<SOAPOperationName>$$enterOperationNameHere$$</SOAPOperationName>
+		</Operation>
+
+</ServiceDefinition>

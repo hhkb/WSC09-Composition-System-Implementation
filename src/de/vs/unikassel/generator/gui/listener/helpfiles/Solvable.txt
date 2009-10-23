@@ -1,0 +1,1 @@
+There exists no valid solution based on the given ontology and service definitions.

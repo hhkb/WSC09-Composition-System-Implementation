@@ -1,0 +1,1 @@
+Please enter the URL of the WSDL query file.

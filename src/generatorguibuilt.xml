@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build" name="WSC Challenge Software">
+
+	<property name="dist"  location="../../WS_Generator/dist"/>
+    <property name="src" location="./bin"/>
+    <property name="lib" location="./lib"/>
+    
+	<path id="project.classpath">
+        <pathelement location="."/>
+        <pathelement location="${lib}/jdom.jar"/>
+        <pathelement location="${lib}/xalan-2.7.0.jar"/>
+    </path>
+	
+	<target depends="clean" name="init">	
+	    <mkdir dir="${dist}"/>   
+    </target>
+    
+    <target name="clean">
+		<delete dir="${dist}"/>
+    </target>
+    
+    <target name="lib">
+    	<mkdir dir="${dist}/lib"/>
+
+	    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    	<jar jarfile="${dist}/lib/ChallengeGenerator.jar" manifest="${dist}/Manifest/MANIFEST.MF" basedir="${dist}/build"/>
+    </target>
+    
+    <target depends="init" name="build">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        
+        <mkdir dir="${dist}/build"/>
+    	
+    	<copy todir="${dist}/build">
+       		<fileset dir="./bin">
+       			<include name="**/*.*"/>
+       		</fileset>
+    	</copy>
+        
+       	<antcall target="manifest"/>
+       	<antcall target="jarDependent"/>
+       	<antcall target="extractLibraries"/>
+       	
+       	<copy todir="${dist}/build">
+			<fileset dir="${dist}/Extracted Libraries"/>
+		</copy>
+       	
+        <antcall target="lib"/>
+    </target>
+        	
+    <target name="manifest">
+    	<delete dir="${dist}/Manifest"/>
+        <mkdir dir="${dist}/Manifest"/>
+        	
+        <manifest file="${dist}/Manifest/MANIFEST.MF">
+        	<attribute name="Built-By" value="Steffen Bleul, Thomas Weise and Marc Kirchhoff"/>
+       		<attribute name="Main-Class" value="de.vs.unikassel.generator.gui.GeneratorGUI"/>
+       			
+        	<section name="common">
+        		<attribute name="Specification-Title" value="WS-Challenge Software"/>
+        		<attribute name="Specification-Vendor" value="University of Kassel"/>
+        		<attribute name="Implementation-Vendor" value="Distributed Systems Group Kassel"/>
+      		</section>
+        </manifest>
+    </target>
+	
+	<target name="copyLibraries">
+		<delete dir="${dist}/Dependent Libraries"/>
+		<mkdir dir="${dist}/Dependent Libraries"/>
+		
+		<copy todir="${dist}/Dependent Libraries">
+			<fileset dir="./lib">
+				<include name="**/*.jar"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target depends="copyLibraries" name="extractLibraries">
+		<delete dir="${dist}/Extracted Libraries"/>
+		<mkdir dir="${dist}/Extracted Libraries"/>
+						
+		<unzip dest="${dist}/Extracted Libraries">
+			<patternset>
+				<include name="**/*.*"/>
+		    </patternset>
+		    <fileset dir="${dist}/Dependent Libraries">
+		        <include name="**/*.jar"/>
+		    </fileset>
+		</unzip>
+	</target>
+    
+    <target name="jarDependent">
+    	<antcall target="builtWSSources"/>
+    	<antcall target="builtWSGeneratorUI"/>
+    	<antcall target="builtWSCompetition"/>
+    </target>
+    
+    <target name="builtWSSources">
+    	<delete file="./lib/WebServiceChallengeSources.jar"/>
+    	
+	    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    	<jar jarfile="./lib/WebServiceChallengeSources.jar" basedir="../Web Service Challenge Sources/bin"/>
+    </target>
+    
+    <target name="builtWSGeneratorUI">
+    	<delete file="./lib/WebServiceChallengeGeneratorUI.jar"/>
+    	
+	    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    	<jar jarfile="./lib/WebServiceChallengeGeneratorUI.jar" basedir="../Web Service Challenge Generator UI/bin"/>
+    </target>
+    
+    <target name="builtWSCompetition">
+    	<delete file="./lib/WebServiceChallengeCompetition.jar"/>
+    	
+	    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    	<jar jarfile="./lib/WebServiceChallengeCompetition.jar" basedir="../Web Service Challenge Competition/bin"/>
+    </target>
+    
+</project>

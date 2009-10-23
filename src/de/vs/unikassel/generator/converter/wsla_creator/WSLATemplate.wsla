@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<SLA
+	xmlns="http://www.ibm.com/wsla"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	name="WSC Service SLA">
+
+	<!-- Definition of the Involved Parties, the signatory parties as well as the supporting ones -->
+
+	<Parties>
+		<ServiceProvider name="ACME Service Provider">
+			<Contact>
+				<Street>Vienna XPress Services</Street>
+				<City>Vienna</City>
+			</Contact>
+		</ServiceProvider>
+
+		<ServiceConsumer name="Web Service Challenge Composition Client"/>
+	</Parties>
+
+</SLA>
