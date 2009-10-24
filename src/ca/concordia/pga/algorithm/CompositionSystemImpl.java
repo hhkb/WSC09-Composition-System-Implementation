@@ -187,10 +187,8 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 							/**
 							 * build service index: from service -> required concepts  
 							 */
-							for (Concept c : conceptMap.get(thing.getType())
-									.getChildrenConceptsIndex()) {
-								service.addInputConcept(c);
-							}
+							service.addInputConcept(conceptMap.get(thing.getType()));
+							
 						} else {
 							service.addOutputParam(param);
 							/**
@@ -280,10 +278,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 								initPLevel.add(c);
 							}
 						} else {
-							for (Concept c : conceptMap.get(thing.getType())
-									.getChildrenConceptsIndex()) {
-								goalSet.add(c);
-							}
+								goalSet.add(conceptMap.get(thing.getType()));
 						}
 					}
 				}

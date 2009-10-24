@@ -129,14 +129,10 @@ public class TestParsingMain {
 						paramMap.put(param.getName(), param);
 						if (isRequestParam) {
 							service.addInputParam(param);
-
-							for (Concept c : conceptMap.get(thing.getType())
-									.getChildrenConceptsIndex()) {
-								service.addInputConcept(c);
-							}
+								service.addInputConcept(conceptMap.get(thing.getType()));
+							
 						} else {
 							service.addOutputParam(param);
-
 							for (Concept c : conceptMap.get(thing.getType())
 									.getParentConceptsIndex()) {
 								service.addOutputConcept(c);
@@ -209,10 +205,7 @@ public class TestParsingMain {
 								initPLevel.add(c);
 							}
 						} else {
-							for (Concept c : conceptMap.get(thing.getType())
-									.getChildrenConceptsIndex()) {
-								goalSet.add(c);
-							}
+								goalSet.add(conceptMap.get(thing.getType()));
 						}
 					}
 				}
@@ -310,14 +303,50 @@ public class TestParsingMain {
 			System.out.print(c + " | ");
 		}
 		
-		Set<Service> invokableSet = new HashSet<Service>();
-		for(String key : serviceMap.keySet()){
-			Service s = serviceMap.get(key);
-			if(pg.getPLevel(0).containsAll(s.getInputConceptSet())){
-				invokableSet.add(s);
-				System.out.println("invokable: " + s);
-			}
+		System.out.println();
+		Service service = serviceMap.get("serv1056747493");
+		for(Concept c : pg.getPLevel(0)){
+			if(service.getInputConceptSet().contains(c))
+				System.out.print(c + " | ");
 		}
+
 		
+		Set<Service> invokableSet1 = new HashSet<Service>();
+		Set<Service> invokableSet2 = new HashSet<Service>();
+		Set<Service> notInvokableSet2 = new HashSet<Service>();
+		Date t1 = new Date();
+		for(int i=0; i<100000; i++){
+			invokableSet1.clear();
+			for(String key : serviceMap.keySet()){
+				Service s = serviceMap.get(key);
+				if(pg.getPLevel(0).containsAll(s.getInputConceptSet())){
+					invokableSet1.add(s);
+				}
+			}
+				
+		}
+		Date t2 = new Date();
+
+		Date t3 = new Date();
+		for(int i=0; i<100000; i++){
+			invokableSet2.clear();
+			notInvokableSet2.clear();
+			for(Concept c : pg.getPLevel(0)){
+				invokableSet2.addAll(c.getServicesIndex());
+			}
+			
+			for(Service s : invokableSet2){
+				if(!pg.getPLevel(0).containsAll(s.getInputConceptSet())){
+					notInvokableSet2.add(s);
+				}
+			}
+			invokableSet2.removeAll(notInvokableSet2);		
+		}
+		Date t4 = new Date();
+		
+		
+		System.out.println("\n\nfirst timer: " + (t2.getTime() - t1.getTime()));
+		System.out.println("\n\nsecond timer: " + (t4.getTime() - t3.getTime()));
+	
 	}
 }
