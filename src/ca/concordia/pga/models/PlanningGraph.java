@@ -2,49 +2,59 @@ package ca.concordia.pga.models;
 
 import java.util.Set;
 import java.util.Vector;
+
 /**
  * The class represents a planning graph
+ * 
  * @author Ludeng Zhao(Eric)
- *
+ * 
  */
 public class PlanningGraph {
-	
+
 	private Vector<Set<Concept>> PLevels;
 	private Vector<Set<Service>> ALevels;
 	private Set<Concept> goalSet;
-	
-	public PlanningGraph(){
+
+	public PlanningGraph() {
 		PLevels = new Vector<Set<Concept>>();
 		ALevels = new Vector<Set<Service>>();
 	}
 
-	public Set<Concept> getPLevel(int index){
+	public Vector<Set<Concept>> getPLevels() {
+		return PLevels;
+	}
+
+	public Vector<Set<Service>> getALevels() {
+		return ALevels;
+	}
+
+	public Set<Concept> getPLevel(int index) {
 		return this.PLevels.get(index);
 	}
-	
-	public Set<Service> getALevel(int index){
+
+	public Set<Service> getALevel(int index) {
 		return this.ALevels.get(index);
 	}
-	
-	public void addPLevel(Set<Concept> level){
+
+	public void addPLevel(Set<Concept> level) {
 		this.PLevels.add(level);
 	}
-	
-	public void addALevel(Set<Service> level){
+
+	public void addALevel(Set<Service> level) {
 		this.ALevels.add(level);
 	}
-	
-	public void removeLastPLevel(){
+
+	public void removeLastPLevel() {
 		int size = this.PLevels.size();
-		if(size > 0){
-			this.PLevels.remove(size - 1);	
+		if (size > 0) {
+			this.PLevels.remove(size - 1);
 		}
 	}
-	
-	public void removeLastALevel(){
+
+	public void removeLastALevel() {
 		int size = this.ALevels.size();
-		if(size > 0){
-			this.ALevels.remove(size - 1);	
+		if (size > 0) {
+			this.ALevels.remove(size - 1);
 		}
 	}
 
@@ -55,7 +65,5 @@ public class PlanningGraph {
 	public void setGoalSet(Set<Concept> goalSet) {
 		this.goalSet = goalSet;
 	}
-	
-	
 
 }

@@ -13,9 +13,10 @@ public class TestBPEL_Creator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		BPEL_Creator bpelCreator = new BPEL_Creator("de\\vs\\unikassel\\generator\\converter\\test_files\\solution_files\\problem.xml");
+//		BPEL_Creator bpelCreator = new BPEL_Creator("de\\vs\\unikassel\\generator\\converter\\test_files\\solution_files\\problem.xml");
+		BPEL_Creator bpelCreator = new BPEL_Creator("/Users/ericzhao/Desktop/output.xml");
 		bpelCreator.createBPELDocument();
-		bpelCreator.saveBPELDocument("de\\vs\\unikassel\\generator\\converter\\test_files\\solution_files\\WSBpel.bpel");
+		bpelCreator.saveBPELDocument("/Users/ericzhao/Desktop/WSBpel.bpel");
 		System.out.println(bpelCreator.toString());
 	}
 

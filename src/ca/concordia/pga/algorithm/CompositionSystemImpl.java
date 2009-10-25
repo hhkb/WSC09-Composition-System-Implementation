@@ -2,6 +2,9 @@ package ca.concordia.pga.algorithm;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -25,7 +28,9 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 
 import ca.concordia.pga.models.Concept;
 import ca.concordia.pga.models.Param;
@@ -33,6 +38,7 @@ import ca.concordia.pga.models.PlanningGraph;
 import ca.concordia.pga.models.Service;
 import ca.concordia.pga.models.Thing;
 
+import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
 import de.vs.unikassel.query.client.callback_interface.stub.CallbackService;
 import de.vs.unikassel.query.client.callback_interface.stub.ClientCallbackInterfaceService;
 import de.vs.unikassel.query.server.CompositionSystemInterface;
@@ -72,7 +78,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 	 * @param thingMap
 	 * @param url
 	 * @throws DocumentException
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException 
 	 */
 	@SuppressWarnings("unchecked")
 	private static void parseTaxonomyDocument(Map<String, Concept> conceptMap,
@@ -107,11 +113,10 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 
 				thingMap.put(thing.getName(), thing);
 			}
-
 		}
 
 		/**
-		 * build indexing for concept: concept -> concept's parents set and children set
+		 * build indexing for concept
 		 */
 		for (String key : conceptMap.keySet()) {
 			Concept concept = conceptMap.get(key);
@@ -140,7 +145,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 	 * @param thingMap
 	 * @param url
 	 * @throws DocumentException
-	 * @throws URISyntaxException
+	 * @throws URISyntaxException 
 	 */
 	@SuppressWarnings("unchecked")
 	private static void parseServicesDocument(Map<String, Service> serviceMap,
@@ -184,16 +189,9 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 						paramMap.put(param.getName(), param);
 						if (isRequestParam) {
 							service.addInputParam(param);
-							/**
-							 * build service index: from service -> required concepts  
-							 */
 							service.addInputConcept(conceptMap.get(thing.getType()));
-							
 						} else {
 							service.addOutputParam(param);
-							/**
-							 * build service index: from service -> provided concepts
-							 */
 							for (Concept c : conceptMap.get(thing.getType())
 									.getParentConceptsIndex()) {
 								service.addOutputConcept(c);
@@ -215,7 +213,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 	 * @param conceptMap
 	 * @param serviceMap
 	 */
-	private static void buildInvertedIndexing(Map<String, Concept> conceptMap,
+	private static void buildInvertedIndex(Map<String, Concept> conceptMap,
 			Map<String, Service> serviceMap) {
 		for (String serviceKey : serviceMap.keySet()) {
 			Service service = serviceMap.get(serviceKey);
@@ -235,7 +233,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 	 * @param conceptMap
 	 * @param thingMap
 	 * @param pg
-	 * @param wsdl
+	 * @param url
 	 * @throws DocumentException
 	 */
 	@SuppressWarnings("unchecked")
@@ -278,7 +276,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 								initPLevel.add(c);
 							}
 						} else {
-								goalSet.add(conceptMap.get(thing.getType()));
+							goalSet.add(conceptMap.get(thing.getType()));
 						}
 					}
 				}
@@ -290,9 +288,58 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 
 			}
 		}
+		pg.addALevel(new HashSet<Service>());
 
 	}
 
+	/**
+	 * Generate BPEL file from the solution
+	 * @param pg
+	 * @throws IOException 
+	 */
+	private static void generateSolution(PlanningGraph pg) throws IOException{
+        Document document = DocumentHelper.createDocument();
+        Element root = document.addElement( "problemStructure" );
+        Element solutions = root.addElement( "solutions" );
+        Element solution = solutions.addElement("solution");
+        Element sequenceRoot = solution.addElement("sequence");
+        for(int i=1; i<pg.getALevels().size(); i++){
+        	Set<Service> actionLevel = pg.getALevel(i);
+        	Element parallel = sequenceRoot.addElement("parallel");
+        	for(Service s : actionLevel){
+            	Element serviceDesc = parallel.addElement("serviceDesc");
+            	Element abstraction = serviceDesc.addElement("abstraction");            	
+            	Element realizations = serviceDesc.addElement("realizations");
+            	Element input = abstraction.addElement("input");
+            	Element output = abstraction.addElement("output");
+        		Element service = realizations.addElement("service");
+        		service.addAttribute("name", s.getName());
+        		for(Concept c : s.getInputConceptSet()){
+        			input.addElement("concept").addAttribute("name", c.getName());
+        		}
+        		for(Concept c : s.getOutputConceptSet()){
+        			output.addElement("concept").addAttribute("name", c.getName());
+        		}
+        	}
+        }
+        
+        /**
+         * write problem.xml to a file
+         */
+        OutputFormat format = OutputFormat.createPrettyPrint();
+        XMLWriter writer = new XMLWriter(new FileWriter("/Users/ericzhao/Desktop/problem.xml"),format);
+        writer.write(document);
+        writer.close();
+        
+        /**
+         * call BPEL creator to convert problem.xml to BPEL and save it to a file
+         */
+        BPEL_Creator bpelCreator = new BPEL_Creator("/Users/ericzhao/Desktop/problem.xml");
+        bpelCreator.createBPELDocument();
+        bpelCreator.saveBPELDocument("/Users/ericzhao/Desktop/Solution.bpel");
+
+	}
+	
 
 	/**
 	 * This method is called by the WSC-Client to initialize the Composition-System.
@@ -323,7 +370,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 			e.printStackTrace();
 		}
 
-		buildInvertedIndexing(conceptMap, serviceMap);
+		buildInvertedIndex(conceptMap, serviceMap);
 
 		Date initEnd = new Date(); // initialization end checkpoint
 
@@ -362,6 +409,12 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 			@WebParam(name = "callbackURL") String callbackURL) {
 		
 		this.stopped = false;
+
+		Set<Service> invokedServiceSet = new HashSet<Service>();
+		Set<Service> currInvokableServiceSet = new HashSet<Service>();
+		Set<Service> currNonInvokableServiceSet = new HashSet<Service>();
+		Set<Concept> knownConceptSet; // shortcut to pg's current PLevel
+		
 		
 		try {
 			parseChallengeDocument(paramMap, conceptMap, thingMap, pg, wsdlQuery);
@@ -387,18 +440,102 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 
 
 		// Do some calculations and create the BPEL-document.
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException exception) {
-			exception.printStackTrace();
+		/**
+		 * Flooding Algorithm Implementation
+		 */
+		Date compStart = new Date(); // start composition checkpoint
+		int currentLevel = 0;
+		do {
+			/**
+			 * point knownConceptSet to pg's current PLevel
+			 */
+			knownConceptSet = pg.getPLevel(currentLevel);
+			currInvokableServiceSet = new HashSet<Service>();
+			currNonInvokableServiceSet = new HashSet<Service>();
+			Set<Concept> pLevel = new HashSet<Concept>();
+			/**
+			 * fetch all possible candidates
+			 */
+			for (Concept c : pg.getPLevel(currentLevel)) {
+				currInvokableServiceSet.addAll(c.getServicesIndex());
+			}
+			/**
+			 * remove those who have already been invoked
+			 */
+			currInvokableServiceSet.removeAll(invokedServiceSet);
+			/**
+			 * remove those whose invocation condition have not been satisfied
+			 */
+			for (Service s : currInvokableServiceSet) {
+				if (!pg.getPLevel(currentLevel).containsAll(
+						s.getInputConceptSet())) {
+					currNonInvokableServiceSet.add(s);
+				}
+			}
+			currInvokableServiceSet.removeAll(currNonInvokableServiceSet);
+			if (currInvokableServiceSet.size() <= 0) {
+				break;
+			}
+			/**
+			 * invoked the services
+			 */
+			invokedServiceSet.addAll(currInvokableServiceSet);
+			pg.addALevel(currInvokableServiceSet);
+			/**
+			 * generate PLevel
+			 */
+			for (Service s : currInvokableServiceSet) {
+				knownConceptSet.addAll(s.getOutputConceptSet());
+			}
+			pLevel.addAll(knownConceptSet);
+			pg.addPLevel(pLevel);
+			/**
+			 * increase the level and print out newly invoked services
+			 */
+			currentLevel++;
+			System.out.println("\n*********Action Level " + currentLevel
+					+ " *******");
+			for (Service s : pg.getALevel(currentLevel)) {
+				System.out.print(s + "|");
+			}
+			System.out.println();
+
+		} while (!knownConceptSet.containsAll(pg.getGoalSet())
+				& !currInvokableServiceSet.isEmpty());
+		Date compEnd = new Date(); // end composition checkpoint		
+		
+		/**
+		 * Print out the composition result
+		 */
+		if (knownConceptSet.containsAll(pg.getGoalSet())) {
+			System.out.println("\n=========Goal Found=========");
+			System.out.println("Composition Time: "
+					+ (compEnd.getTime() - compStart.getTime()) + "ms");
+			System.out.println("Execution Length: "
+					+ (pg.getALevels().size() - 1));
+			System.out.println("Services Invoked: " + invokedServiceSet.size());
+			System.out.println("=============================");
+			
+			try {
+				generateSolution(pg);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		} else {
+			System.out.println("\n=========Goal @NOT@ Found=========");
 		}
 
 		// Read a test-bpel-document.
-		String testBPELResultDocumentPath = "ca/concordia/pga/testcase/wsc08/Testset01/Solution.bpel";
-		BufferedReader bpelDocumentReader = new BufferedReader(
-				new InputStreamReader(CompositionSystemImpl.class
-						.getClassLoader().getResourceAsStream(
-								testBPELResultDocumentPath)));
+		String testBPELResultDocumentPath = "/Users/ericzhao/Desktop/Solution.bpel";
+		BufferedReader bpelDocumentReader = null;
+		try {
+			bpelDocumentReader = new BufferedReader(
+					new InputStreamReader(new FileInputStream(testBPELResultDocumentPath)));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		StringBuffer bpelDocument = new StringBuffer();
 		String line = null;
 
