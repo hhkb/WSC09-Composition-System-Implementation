@@ -73,6 +73,55 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 	}
 
 	/**
+	 * Parse WSLA document from given URL
+	 * 
+	 * @param serviceMap
+	 * @param url
+	 * @throws DocumentException
+	 * @throws URISyntaxException 
+	 */
+	@SuppressWarnings("unchecked")
+	private static int parseWSLADocument(Map<String, Service> serviceMap,
+			String url) throws DocumentException, URISyntaxException {
+		File wslaFile = new File(new URI(url));
+		SAXReader reader = new SAXReader();
+		Document document = reader.read(wslaFile);
+		Element wslaRoot = document.getRootElement();
+		Element obligationsRoot = wslaRoot.element("Obligations");
+		
+		int wslaCount = 0;
+		for (Iterator i = obligationsRoot.elementIterator(); i.hasNext();) {
+			Element serviceLevelObjective = (Element) i.next();
+			String nameStr = serviceLevelObjective.attribute("name").getText();
+
+			if (nameStr.contains("ServiceLevelObjectiveResponsetimeserv")) {
+				String servName = nameStr.replaceAll(
+						"ServiceLevelObjectiveResponsetime", "");
+				Service s = serviceMap.get(servName);
+				if (s != null) {
+					wslaCount++;
+					s.setResponseTime(new Integer(serviceLevelObjective
+							.element("Expression").element("Predicate")
+							.element("Value").getText()));
+				}
+			} else if (nameStr.contains("ServiceLevelObjectiveThroughputserv")) {
+				String servName = nameStr.replaceAll(
+						"ServiceLevelObjectiveThroughput", "");
+				Service s = serviceMap.get(servName);
+				if (s != null) {
+					s.setThroughput(new Integer(serviceLevelObjective.element(
+							"Expression").element("Predicate").element("Value")
+							.getText()));
+				}
+
+			}
+			
+		}
+		return wslaCount;
+		
+	}
+	
+	/**
 	 * Parse taxonomy document from given URL
 	 * @param conceptMap
 	 * @param thingMap
@@ -337,7 +386,6 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
         BPEL_Creator bpelCreator = new BPEL_Creator("/Users/ericzhao/Desktop/problem.xml");
         bpelCreator.createBPELDocument();
         bpelCreator.saveBPELDocument("/Users/ericzhao/Desktop/Solution.bpel");
-
 	}
 	
 
@@ -355,6 +403,8 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 		
 		Date initStart = new Date(); // initialization start checkpoint
 
+		int wslaCount = 0;
+		
 		conceptMap = new HashMap<String, Concept>();
 		thingMap = new HashMap<String, Thing>();
 		serviceMap = new HashMap<String, Service>();
@@ -364,6 +414,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 			parseTaxonomyDocument(conceptMap, thingMap, owlTaxonomyURL);
 			parseServicesDocument(serviceMap, paramMap, conceptMap, thingMap,
 					wsdlServiceDescriptionsURL);
+			wslaCount = parseWSLADocument(serviceMap, wslaSLAgreementsURL);
 		} catch (DocumentException e) {
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
@@ -389,6 +440,7 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 		System.out.println("Things size: " + thingMap.size());
 		System.out.println("Param size: " + paramMap.size());
 		System.out.println("Services size: " + serviceMap.size());
+		System.out.println("WSLA services count: " + wslaCount);
 		System.out.println();
 		System.out.println("***************************************");
 		System.out.println("*******Ready For Querying**************");
@@ -526,12 +578,14 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 			System.out.println("\n=========Goal @NOT@ Found=========");
 		}
 
-		// Read a test-bpel-document.
-		String testBPELResultDocumentPath = "/Users/ericzhao/Desktop/Solution.bpel";
+		/**
+		 * Send back the BPEL document the generator just created
+		 */
+		String solutionURL = "/Users/ericzhao/Desktop/Solution.bpel";
 		BufferedReader bpelDocumentReader = null;
 		try {
 			bpelDocumentReader = new BufferedReader(
-					new InputStreamReader(new FileInputStream(testBPELResultDocumentPath)));
+					new InputStreamReader(new FileInputStream(solutionURL)));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

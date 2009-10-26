@@ -30,13 +30,66 @@ import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
 public class TestParsingMain {
 
 	// change the Prefix URL according your environment
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset02/";
+	// static final String PREFIX_URL =
+	// "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
+	static final String WSLA_URL = PREFIX_URL + "Servicelevelagreements.wsla";
 	static final String CHALLENGE_URL = PREFIX_URL + "Challenge.wsdl";
 
 	/**
+	 * Parse WSLA document from given URL
+	 * 
+	 * @param serviceMap
+	 * @param url
+	 * @throws DocumentException
+	 */
+	@SuppressWarnings("unchecked")
+	private static void parseWSLADocument(Map<String, Service> serviceMap,
+			String url) throws DocumentException {
+		File wslaFile = new File(url);
+		SAXReader reader = new SAXReader();
+		Document document = reader.read(wslaFile);
+		Element wslaRoot = document.getRootElement();
+		Element obligationsRoot = wslaRoot.element("Obligations");
+
+		int count = 0;
+
+		for (Iterator i = obligationsRoot.elementIterator(); i.hasNext();) {
+			Element serviceLevelObjective = (Element) i.next();
+			String nameStr = serviceLevelObjective.attribute("name").getText();
+
+			if (nameStr.contains("ServiceLevelObjectiveResponsetimeserv")) {
+				String servName = nameStr.replaceAll(
+						"ServiceLevelObjectiveResponsetime", "");
+				Service s = serviceMap.get(servName);
+				if (s != null) {
+					count++;
+					s.setResponseTime(new Integer(serviceLevelObjective
+							.element("Expression").element("Predicate")
+							.element("Value").getText()));
+				}
+			} else if (nameStr.contains("ServiceLevelObjectiveThroughputserv")) {
+				String servName = nameStr.replaceAll(
+						"ServiceLevelObjectiveThroughput", "");
+				Service s = serviceMap.get(servName);
+				if (s != null) {
+					s.setThroughput(new Integer(serviceLevelObjective.element(
+							"Expression").element("Predicate").element("Value")
+							.getText()));
+				}
+
+			}
+
+		}
+
+		System.out.println("Modified WSLA Services: " + count);
+	}
+
+	/**
 	 * Parse taxonomy document from given URL
+	 * 
 	 * @param conceptMap
 	 * @param thingMap
 	 * @param url
@@ -101,6 +154,7 @@ public class TestParsingMain {
 
 	/**
 	 * Parse services document from given URL
+	 * 
 	 * @param serviceMap
 	 * @param paramMap
 	 * @param conceptMap
@@ -150,7 +204,8 @@ public class TestParsingMain {
 						paramMap.put(param.getName(), param);
 						if (isRequestParam) {
 							service.addInputParam(param);
-							service.addInputConcept(conceptMap.get(thing.getType()));
+							service.addInputConcept(conceptMap.get(thing
+									.getType()));
 						} else {
 							service.addOutputParam(param);
 							for (Concept c : conceptMap.get(thing.getType())
@@ -170,7 +225,9 @@ public class TestParsingMain {
 	}
 
 	/**
-	 * Build inverted indexing table: concept -> all services who accept the concept
+	 * Build inverted indexing table: concept -> all services who accept the
+	 * concept
+	 * 
 	 * @param conceptMap
 	 * @param serviceMap
 	 */
@@ -189,7 +246,9 @@ public class TestParsingMain {
 	}
 
 	/**
-	 * Parse the challenge String given by client. Also convert the I/O params to concepts
+	 * Parse the challenge String given by client. Also convert the I/O params
+	 * to concepts
+	 * 
 	 * @param paramMap
 	 * @param conceptMap
 	 * @param thingMap
@@ -257,52 +316,58 @@ public class TestParsingMain {
 
 	/**
 	 * Generate BPEL file from the solution
+	 * 
 	 * @param pg
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	private static void generateSolution(PlanningGraph pg) throws IOException{
-        Document document = DocumentHelper.createDocument();
-        Element root = document.addElement( "problemStructure" );
-        Element solutions = root.addElement( "solutions" );
-        Element solution = solutions.addElement("solution");
-        Element sequenceRoot = solution.addElement("sequence");
-        for(int i=1; i<pg.getALevels().size(); i++){
-        	Set<Service> actionLevel = pg.getALevel(i);
-        	Element parallel = sequenceRoot.addElement("parallel");
-        	for(Service s : actionLevel){
-            	Element serviceDesc = parallel.addElement("serviceDesc");
-            	Element abstraction = serviceDesc.addElement("abstraction");            	
-            	Element realizations = serviceDesc.addElement("realizations");
-            	Element input = abstraction.addElement("input");
-            	Element output = abstraction.addElement("output");
-        		Element service = realizations.addElement("service");
-        		service.addAttribute("name", s.getName());
-        		for(Concept c : s.getInputConceptSet()){
-        			input.addElement("concept").addAttribute("name", c.getName());
-        		}
-        		for(Concept c : s.getOutputConceptSet()){
-        			output.addElement("concept").addAttribute("name", c.getName());
-        		}
-        	}
-        }
-        
-        /**
-         * write problem.xml to a file
-         */
-        OutputFormat format = OutputFormat.createPrettyPrint();
-        XMLWriter writer = new XMLWriter(new FileWriter("/Users/ericzhao/Desktop/problem.xml"),format);
-        writer.write(document);
-        writer.close();
-        
-        /**
-         * call BPEL creator to convert problem.xml to BPEL and save it to a file
-         */
-        BPEL_Creator bpelCreator = new BPEL_Creator("/Users/ericzhao/Desktop/problem.xml");
-        bpelCreator.createBPELDocument();
-        bpelCreator.saveBPELDocument("/Users/ericzhao/Desktop/Solution.bpel");
+	private static void generateSolution(PlanningGraph pg) throws IOException {
+		Document document = DocumentHelper.createDocument();
+		Element root = document.addElement("problemStructure");
+		Element solutions = root.addElement("solutions");
+		Element solution = solutions.addElement("solution");
+		Element sequenceRoot = solution.addElement("sequence");
+		for (int i = 1; i < pg.getALevels().size(); i++) {
+			Set<Service> actionLevel = pg.getALevel(i);
+			Element parallel = sequenceRoot.addElement("parallel");
+			for (Service s : actionLevel) {
+				Element serviceDesc = parallel.addElement("serviceDesc");
+				Element abstraction = serviceDesc.addElement("abstraction");
+				Element realizations = serviceDesc.addElement("realizations");
+				Element input = abstraction.addElement("input");
+				Element output = abstraction.addElement("output");
+				Element service = realizations.addElement("service");
+				service.addAttribute("name", s.getName());
+				for (Concept c : s.getInputConceptSet()) {
+					input.addElement("concept").addAttribute("name",
+							c.getName());
+				}
+				for (Concept c : s.getOutputConceptSet()) {
+					output.addElement("concept").addAttribute("name",
+							c.getName());
+				}
+			}
+		}
+
+		/**
+		 * write problem.xml to a file
+		 */
+		OutputFormat format = OutputFormat.createPrettyPrint();
+		XMLWriter writer = new XMLWriter(new FileWriter(
+				"/Users/ericzhao/Desktop/problem.xml"), format);
+		writer.write(document);
+		writer.close();
+
+		/**
+		 * call BPEL creator to convert problem.xml to BPEL and save it to a
+		 * file
+		 */
+		BPEL_Creator bpelCreator = new BPEL_Creator(
+				"/Users/ericzhao/Desktop/problem.xml");
+		bpelCreator.createBPELDocument();
+		bpelCreator.saveBPELDocument("/Users/ericzhao/Desktop/Solution.bpel");
 
 	}
-	
+
 	/**
 	 * @param args
 	 * @throws DocumentException
@@ -326,6 +391,7 @@ public class TestParsingMain {
 			parseTaxonomyDocument(conceptMap, thingMap, TAXONOMY_URL);
 			parseServicesDocument(serviceMap, paramMap, conceptMap, thingMap,
 					SERVICES_URL);
+			parseWSLADocument(serviceMap, WSLA_URL);
 		} catch (DocumentException e) {
 
 			e.printStackTrace();
@@ -345,10 +411,10 @@ public class TestParsingMain {
 		/**
 		 * print out the content of inverted index
 		 */
-		// System.out.println("**********************************");
-		// System.out.println("********Inverted Index************");
-		// System.out.println("**********************************");
-		//
+		System.out.println("**********************************");
+		System.out.println("********Inverted Index************");
+		System.out.println("**********************************");
+
 		// for (String key : conceptMap.keySet()) {
 		// Concept concept = conceptMap.get(key);
 		// if (concept.getServicesIndex().size() > 0) {
@@ -357,7 +423,7 @@ public class TestParsingMain {
 		// System.out.print(s.getName() + " | ");
 		// }
 		// System.out.println("");
-		//
+		//		
 		// }
 		// }
 
@@ -478,7 +544,7 @@ public class TestParsingMain {
 					+ (pg.getALevels().size() - 1));
 			System.out.println("Services Invoked: " + invokedServiceSet.size());
 			System.out.println("=============================");
-			
+
 			try {
 				generateSolution(pg);
 			} catch (IOException e) {
@@ -492,31 +558,43 @@ public class TestParsingMain {
 		/**
 		 * Experiment showing inverted index working faster than normal approach
 		 */
-		/*
-		 * Set<Service> invokableSet1 = new HashSet<Service>(); Set<Service>
-		 * invokableSet2 = new HashSet<Service>(); Set<Service> notInvokableSet2
-		 * = new HashSet<Service>(); Date t1 = new Date(); for(int i=0; i<100;
-		 * i++){ invokableSet1.clear(); for(String key : serviceMap.keySet()){
-		 * Service s = serviceMap.get(key);
-		 * if(pg.getPLevel(0).containsAll(s.getInputConceptSet())){
-		 * invokableSet1.add(s); } }
-		 * 
-		 * } Date t2 = new Date();
-		 * 
-		 * Date t3 = new Date(); for(int i=0; i<100; i++){
-		 * invokableSet2.clear(); notInvokableSet2.clear(); for(Concept c :
-		 * pg.getPLevel(0)){ invokableSet2.addAll(c.getServicesIndex()); }
-		 * 
-		 * for(Service s : invokableSet2){
-		 * if(!pg.getPLevel(0).containsAll(s.getInputConceptSet())){
-		 * notInvokableSet2.add(s); } }
-		 * invokableSet2.removeAll(notInvokableSet2); } Date t4 = new Date();
-		 * 
-		 * 
-		 * System.out.println("\n\nfirst timer: " + (t2.getTime() -
-		 * t1.getTime())); System.out.println("\n\nsecond timer: " +
-		 * (t4.getTime() - t3.getTime()));
-		 */
+
+//		Set<Service> invokableSet1 = new HashSet<Service>();
+//		Set<Service> invokableSet2 = new HashSet<Service>();
+//		Set<Service> notInvokableSet2 = new HashSet<Service>();
+//		Date t1 = new Date();
+//		for (int i = 0; i < 1000; i++) {
+//			invokableSet1.clear();
+//			for (String key : serviceMap.keySet()) {
+//				Service s = serviceMap.get(key);
+//				if (pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
+//					invokableSet1.add(s);
+//				}
+//			}
+//
+//		}
+//		Date t2 = new Date();
+//
+//		Date t3 = new Date();
+//		for (int i = 0; i < 1000; i++) {
+//			invokableSet2.clear();
+//			notInvokableSet2.clear();
+//			for (Concept c : pg.getPLevel(0)) {
+//				invokableSet2.addAll(c.getServicesIndex());
+//			}
+//
+//			for (Service s : invokableSet2) {
+//				if (!pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
+//					notInvokableSet2.add(s);
+//				}
+//			}
+//			invokableSet2.removeAll(notInvokableSet2);
+//		}
+//		Date t4 = new Date();
+//
+//		System.out.println("\n\nfirst timer: " + (t2.getTime() - t1.getTime()));
+//		System.out
+//				.println("\n\nsecond timer: " + (t4.getTime() - t3.getTime()));
 
 	}
 }

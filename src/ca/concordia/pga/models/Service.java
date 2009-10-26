@@ -14,6 +14,8 @@ public class Service extends UniNameObject {
 	private Set<Concept> inputConceptSet;
 	private Set<Concept> outputConceptSet;
 	private Set<Service> equivalentServiceSet;
+	private int responseTime;
+	private int throughput;
 
 	public Service(String name) {
 		super(name);
@@ -61,6 +63,22 @@ public class Service extends UniNameObject {
 	
 	public Set<Service> getEquivalentServiceSet() {
 		return equivalentServiceSet;
+	}
+
+	public int getResponseTime() {
+		return responseTime;
+	}
+
+	public void setResponseTime(int responseTime) {
+		this.responseTime = responseTime;
+	}
+
+	public int getThroughput() {
+		return throughput;
+	}
+
+	public void setThroughput(int throughput) {
+		this.throughput = throughput;
 	}
 
 	
