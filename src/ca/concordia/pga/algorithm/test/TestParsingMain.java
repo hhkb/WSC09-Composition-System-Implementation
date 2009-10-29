@@ -437,7 +437,7 @@ public class TestParsingMain {
 		Set<Service> minimumServiceSet;
 		Set<Concept> subGoalSet = pg.getGoalSet();
 		Set<Set<Service>> routes = new HashSet<Set<Service>>();
-		Vector<Integer> routeCounts = new Vector<Integer>(); //debug purpose, will be remove
+		Vector<Integer> routeCounters = new Vector<Integer>(); //debug purpose, will be remove
 		Map<Integer, Set<Service>> solutionMap = new HashMap<Integer, Set<Service>>();
 		
 		do {
@@ -490,13 +490,13 @@ public class TestParsingMain {
 			/**
 			 * reset routes
 			 */
-			routeCounts.add(routes.size());
+			routeCounters.add(routes.size());
 			routes.clear();
 			currLevel--;
 
 		} while (currLevel > 0);
 		
-		return routeCounts; //temperate for debug, will be removed!
+		return routeCounters; //temperate for debug, will be removed!
 	}
 
 	/**
@@ -583,7 +583,7 @@ public class TestParsingMain {
 		System.out.println();
 
 		/**
-		 * Flooding Algorithm Implementation
+		 * PG Algorithm Implementation
 		 */
 		Date compStart = new Date(); // start composition checkpoint
 		int currentLevel = 0;
@@ -668,7 +668,7 @@ public class TestParsingMain {
 			/**
 			 * do backward search to remove redundancy (pruning PG)
 			 */
-			Vector<Integer> routesCounts = refineSolution(pg);
+			Vector<Integer> routesCounters = refineSolution(pg);
 			Date refineEnd = new Date(); //refinement end checkpoint
 			
 			System.out.println();
@@ -680,7 +680,7 @@ public class TestParsingMain {
 			for(int i=1; i<pg.getALevels().size(); i++){
 				System.out.println("\n*********Action Level " + i
 						+ " (alternative routes:" 
-						+ routesCounts.get(routesCounts.size() - i) + ") *******");
+						+ routesCounters.get(routesCounters.size() - i) + ") *******");
 				for (Service s : pg.getALevel(i)) {
 					System.out.println(s);
 					invokedServiceCount++;
