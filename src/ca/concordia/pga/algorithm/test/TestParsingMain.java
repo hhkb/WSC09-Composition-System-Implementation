@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -30,12 +31,12 @@ import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
 public class TestParsingMain {
 
 	// change the Prefix URL according your environment
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset02/";
-	// static final String PREFIX_URL =
-	// "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
+//	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset03/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset05/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
-	static final String WSLA_URL = PREFIX_URL + "Servicelevelagreements.wsla";
+	// static final String WSLA_URL = PREFIX_URL +
+	// "Servicelevelagreements.wsla";
 	static final String CHALLENGE_URL = PREFIX_URL + "Challenge.wsdl";
 
 	/**
@@ -369,6 +370,136 @@ public class TestParsingMain {
 	}
 
 	/**
+	 * Recursive (depth first) implementation for computing all alternative routes that can produce
+	 * given concepts
+	 * @param conceptSet
+	 * @param routes
+	 */
+	private static void computeRoutes(Set<Concept> conceptSet,
+			Set<Set<Service>> routes) {
+
+		Set<Service> removableServiceSet = new HashSet<Service>();
+		Set<Service> unRemovableServiceSet = new HashSet<Service>();
+		/**
+		 * get removable service
+		 */
+		for (Concept c : conceptSet) {
+			if (c.getOriginServiceSet().size() > 1) {
+				removableServiceSet.addAll(c.getOriginServiceSet());
+			} else if (c.getOriginServiceSet().size() == 1) {
+				unRemovableServiceSet.addAll(c.getOriginServiceSet());
+			}
+		}
+
+		removableServiceSet.removeAll(unRemovableServiceSet);
+
+		if (removableServiceSet.size() > 0) {
+			for (Service s : removableServiceSet) {
+				/**
+				 * clone conceptSet to currStatus
+				 */
+				Set<Concept> currStatus = new HashSet<Concept>();
+				for (Concept c : conceptSet) {
+					Concept concept = new Concept(c.getName());
+					concept.getOriginServiceSet().addAll(
+							c.getOriginServiceSet());
+					currStatus.add(concept);
+				}
+				/**
+				 * remove removable services from the clone
+				 */
+				for (Concept c : currStatus) {
+					c.getOriginServiceSet().remove(s);
+				}
+				/**
+				 * recursive the process
+				 */
+				computeRoutes(currStatus, routes);
+			}
+		} else {
+			Set<Service> minimumServiceSet = new HashSet<Service>();
+			for (Concept c : conceptSet) {
+				minimumServiceSet.addAll(c.getOriginServiceSet());
+			}
+			routes.add(minimumServiceSet);
+		}
+
+	}
+
+	/**
+	 * backward search based on pg to prune redundant web services
+	 * @param pg
+	 */
+	private static Vector<Integer> refineSolution(PlanningGraph pg) {
+
+		int currLevel = pg.getALevels().size() - 1;
+
+		Set<Service> minimumServiceSet;
+		Set<Concept> subGoalSet = pg.getGoalSet();
+		Set<Set<Service>> routes = new HashSet<Set<Service>>();
+		Vector<Integer> routeCounts = new Vector<Integer>(); //debug purpose, will be remove
+		Map<Integer, Set<Service>> solutionMap = new HashMap<Integer, Set<Service>>();
+		
+		do {
+			/**
+			 * compute services that each concept is origin from
+			 */
+			Set<Service> actionSet = pg.getALevel(currLevel);
+			for (Concept g : subGoalSet) {
+				for (Service s : actionSet) {
+					if (s.getOutputConceptSet().contains(g)) {
+						g.addServiceToOrigin(s);
+					}
+				}
+			}
+
+			/**
+			 * compute all alternative routes that current level has  
+			 */
+			computeRoutes(subGoalSet, routes);
+//			System.out.println("Routes Size: " + routes.size());
+			
+			/**
+			 * get the route with minimum web services to invoke
+			 */
+			minimumServiceSet = new HashSet<Service>();
+			Iterator<Set<Service>> itr = routes.iterator();
+			while(itr.hasNext()){
+				Set<Service> candidate = itr.next();
+				if(minimumServiceSet.size() == 0){
+					minimumServiceSet = candidate;
+				}else if(minimumServiceSet.size() > candidate.size()){
+					minimumServiceSet = candidate;
+				}
+			}
+			
+			/**
+			 * overwrite selected route into pg's ALevel
+			 * (temperate implementation! in order to keep pg's information)
+			 */
+			pg.setALevel(currLevel, minimumServiceSet);
+			solutionMap.put(currLevel, minimumServiceSet);
+			
+			/**
+			 * get the inputs of invoked web services as subGoals
+			 */
+			subGoalSet.clear();
+			for (Service s : minimumServiceSet) {
+				subGoalSet.addAll(s.getInputConceptSet());
+			}
+			/**
+			 * reset routes
+			 */
+			routeCounts.add(routes.size());
+			routes.clear();
+			currLevel--;
+
+		} while (currLevel > 0);
+		
+		return routeCounts; //temperate for debug, will be removed!
+	}
+
+	/**
 	 * @param args
 	 * @throws DocumentException
 	 */
@@ -391,7 +522,7 @@ public class TestParsingMain {
 			parseTaxonomyDocument(conceptMap, thingMap, TAXONOMY_URL);
 			parseServicesDocument(serviceMap, paramMap, conceptMap, thingMap,
 					SERVICES_URL);
-			parseWSLADocument(serviceMap, WSLA_URL);
+			// parseWSLADocument(serviceMap, WSLA_URL);
 		} catch (DocumentException e) {
 
 			e.printStackTrace();
@@ -411,10 +542,9 @@ public class TestParsingMain {
 		/**
 		 * print out the content of inverted index
 		 */
-		System.out.println("**********************************");
-		System.out.println("********Inverted Index************");
-		System.out.println("**********************************");
-
+		// System.out.println("**********************************");
+		// System.out.println("********Inverted Index************");
+		// System.out.println("**********************************");
 		// for (String key : conceptMap.keySet()) {
 		// Concept concept = conceptMap.get(key);
 		// if (concept.getServicesIndex().size() > 0) {
@@ -427,23 +557,7 @@ public class TestParsingMain {
 		// }
 		// }
 
-		/**
-		 * check whether equivalent service existed
-		 */
-		// int equalService = 0;
-		// for(String key : serviceMap.keySet()){
-		// Service s = serviceMap.get(key);
-		// for(String key2 : serviceMap.keySet()){
-		// Service s2 = serviceMap.get(key2);
-		// if(!s.equals(s2) &
-		// s.getInputConceptSet().equals(s2.getInputConceptSet())
-		// & s.getOutputConceptSet().equals(s2.getOutputConceptSet())){
-		// s.addEquivalentService(s2);
-		// equalService++;
-		// }
-		// }
-		// }
-		// System.out.println("equivalent service number: " + equalService);
+
 
 		/**
 		 * begin the algorithm implementation
@@ -505,7 +619,7 @@ public class TestParsingMain {
 				break;
 			}
 			/**
-			 * invoked the services
+			 * invoke the services
 			 */
 			invokedServiceSet.addAll(currInvokableServiceSet);
 			pg.addALevel(currInvokableServiceSet);
@@ -537,14 +651,52 @@ public class TestParsingMain {
 		 * Print out the composition result
 		 */
 		if (knownConceptSet.containsAll(pg.getGoalSet())) {
+
+			/**
+			 * printout PG status (before pruning)
+			 */
 			System.out.println("\n=========Goal Found=========");
-			System.out.println("Composition Time: "
+			System.out.println("PG Composition Time: "
 					+ (compEnd.getTime() - compStart.getTime()) + "ms");
 			System.out.println("Execution Length: "
 					+ (pg.getALevels().size() - 1));
 			System.out.println("Services Invoked: " + invokedServiceSet.size());
 			System.out.println("=============================");
 
+
+			
+			/**
+			 * do backward search to remove redundancy (pruning PG)
+			 */
+			Vector<Integer> routesCounts = refineSolution(pg);
+			Date refineEnd = new Date(); //refinement end checkpoint
+			
+			System.out.println();
+			System.out.println("===================================");
+			System.out.println("===========After Pruning===========");
+			System.out.println("===================================");
+
+			int invokedServiceCount = 0;
+			for(int i=1; i<pg.getALevels().size(); i++){
+				System.out.println("\n*********Action Level " + i
+						+ " (alternative routes:" 
+						+ routesCounts.get(routesCounts.size() - i) + ") *******");
+				for (Service s : pg.getALevel(i)) {
+					System.out.println(s);
+					invokedServiceCount++;
+				}
+			}
+			System.out.println("\n=================Status=================");
+			System.out.println("Total(including PG) Composition Time: "
+					+ (refineEnd.getTime() - compStart.getTime()) + "ms");
+			System.out.println("Execution Length: "
+					+ (pg.getALevels().size() - 1));
+			System.out.println("Services Invoked: " + invokedServiceCount);			
+			System.out.println("==================End===================");
+
+			/**
+			 * generate solution file
+			 */
 			try {
 				generateSolution(pg);
 			} catch (IOException e) {
@@ -558,43 +710,43 @@ public class TestParsingMain {
 		/**
 		 * Experiment showing inverted index working faster than normal approach
 		 */
-
-//		Set<Service> invokableSet1 = new HashSet<Service>();
-//		Set<Service> invokableSet2 = new HashSet<Service>();
-//		Set<Service> notInvokableSet2 = new HashSet<Service>();
-//		Date t1 = new Date();
-//		for (int i = 0; i < 1000; i++) {
-//			invokableSet1.clear();
-//			for (String key : serviceMap.keySet()) {
-//				Service s = serviceMap.get(key);
-//				if (pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
-//					invokableSet1.add(s);
-//				}
-//			}
-//
-//		}
-//		Date t2 = new Date();
-//
-//		Date t3 = new Date();
-//		for (int i = 0; i < 1000; i++) {
-//			invokableSet2.clear();
-//			notInvokableSet2.clear();
-//			for (Concept c : pg.getPLevel(0)) {
-//				invokableSet2.addAll(c.getServicesIndex());
-//			}
-//
-//			for (Service s : invokableSet2) {
-//				if (!pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
-//					notInvokableSet2.add(s);
-//				}
-//			}
-//			invokableSet2.removeAll(notInvokableSet2);
-//		}
-//		Date t4 = new Date();
-//
-//		System.out.println("\n\nfirst timer: " + (t2.getTime() - t1.getTime()));
-//		System.out
-//				.println("\n\nsecond timer: " + (t4.getTime() - t3.getTime()));
+		// Set<Service> invokableSet1 = new HashSet<Service>();
+		// Set<Service> invokableSet2 = new HashSet<Service>();
+		// Set<Service> notInvokableSet2 = new HashSet<Service>();
+		// Date t1 = new Date();
+		// for (int i = 0; i < 1000; i++) {
+		// invokableSet1.clear();
+		// for (String key : serviceMap.keySet()) {
+		// Service s = serviceMap.get(key);
+		// if (pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
+		// invokableSet1.add(s);
+		// }
+		// }
+		//
+		// }
+		// Date t2 = new Date();
+		//
+		// Date t3 = new Date();
+		// for (int i = 0; i < 1000; i++) {
+		// invokableSet2.clear();
+		// notInvokableSet2.clear();
+		// for (Concept c : pg.getPLevel(0)) {
+		// invokableSet2.addAll(c.getServicesIndex());
+		// }
+		//
+		// for (Service s : invokableSet2) {
+		// if (!pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
+		// notInvokableSet2.add(s);
+		// }
+		// }
+		// invokableSet2.removeAll(notInvokableSet2);
+		// }
+		// Date t4 = new Date();
+		//
+		// System.out.println("\n\nfirst timer: " + (t2.getTime() -
+		// t1.getTime()));
+		// System.out
+		// .println("\n\nsecond timer: " + (t4.getTime() - t3.getTime()));
 
 	}
 }

@@ -491,7 +491,6 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 		System.out.println("*************Query Info End****************");
 
 
-		// Do some calculations and create the BPEL-document.
 		/**
 		 * Flooding Algorithm Implementation
 		 */
@@ -587,7 +586,6 @@ public class CompositionSystemImpl extends CompositionSystemInterface {
 			bpelDocumentReader = new BufferedReader(
 					new InputStreamReader(new FileInputStream(solutionURL)));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		StringBuffer bpelDocument = new StringBuffer();

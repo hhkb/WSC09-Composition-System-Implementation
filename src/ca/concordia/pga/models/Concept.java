@@ -14,6 +14,7 @@ public class Concept extends UniNameObject {
 	private boolean root;
 	private String directParantName;
 	private Set<Service> servicesIndex;
+	private Set<Service> originServiceSet;
 	private Set<Concept> parentConceptsIndex;
 	private Set<Concept> childrenConceptsIndex;
 
@@ -21,6 +22,7 @@ public class Concept extends UniNameObject {
 		super(name);
 		this.root = false;
 		this.servicesIndex = new HashSet<Service>();
+		this.originServiceSet = new HashSet<Service>();
 		this.parentConceptsIndex = new HashSet<Concept>();
 		this.childrenConceptsIndex = new HashSet<Concept>();
 	}
@@ -73,4 +75,14 @@ public class Concept extends UniNameObject {
 		return childrenConceptsIndex;
 	}
 
+	public void addServiceToOrigin(Service service){
+		this.originServiceSet.add(service);
+	}
+	
+	public Set<Service> getOriginServiceSet() {
+		return originServiceSet;
+	}
+
+
+	
 }

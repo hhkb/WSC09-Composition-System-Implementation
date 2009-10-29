@@ -35,6 +35,10 @@ public class PlanningGraph {
 	public Set<Service> getALevel(int index) {
 		return this.ALevels.get(index);
 	}
+	
+	public void setALevel(int index, Set<Service> ALevel){
+		this.ALevels.set(index, ALevel);
+	}
 
 	public void addPLevel(Set<Concept> level) {
 		this.PLevels.add(level);
