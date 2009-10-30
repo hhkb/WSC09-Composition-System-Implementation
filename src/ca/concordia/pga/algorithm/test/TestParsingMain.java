@@ -3,10 +3,12 @@ package ca.concordia.pga.algorithm.test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -19,6 +21,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
+import ca.concordia.pga.algorithm.utils.CombinationHelper;
 import ca.concordia.pga.models.*;
 import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
 
@@ -32,7 +35,7 @@ public class TestParsingMain {
 
 	// change the Prefix URL according your environment
 //	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset03/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset05/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset04/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
 	// static final String WSLA_URL = PREFIX_URL +
@@ -370,12 +373,36 @@ public class TestParsingMain {
 	}
 
 	/**
-	 * Recursive (depth first) implementation for computing all alternative routes that can produce
+	 * compute  removable service set from the given goal concept set
+	 * @param conceptSet
+	 * @return
+	 */
+	private static Set<Service> getRemovableServiceSet(Set<Concept> conceptSet){
+		Set<Service> removableServiceSet = new HashSet<Service>();
+		Set<Service> unRemovableServiceSet = new HashSet<Service>();
+		/**
+		 * get removable service
+		 */
+		for (Concept c : conceptSet) {
+			if (c.getOriginServiceSet().size() > 1) {
+				removableServiceSet.addAll(c.getOriginServiceSet());
+			} else if (c.getOriginServiceSet().size() == 1) {
+				unRemovableServiceSet.addAll(c.getOriginServiceSet());
+			}
+		}
+		
+		removableServiceSet.removeAll(unRemovableServiceSet);
+
+		return removableServiceSet;
+	}
+
+	/**
+	 * (Old) Recursive (depth first) implementation for computing all alternative routes that can produce
 	 * given concepts
 	 * @param conceptSet
 	 * @param routes
 	 */
-	private static void computeRoutes(Set<Concept> conceptSet,
+	private static void computeRoutes_Old(Set<Concept> conceptSet,
 			Set<Set<Service>> routes) {
 
 		Set<Service> removableServiceSet = new HashSet<Service>();
@@ -414,7 +441,7 @@ public class TestParsingMain {
 				/**
 				 * recursive the process
 				 */
-				computeRoutes(currStatus, routes);
+				computeRoutes_Old(currStatus, routes);
 			}
 		} else {
 			Set<Service> minimumServiceSet = new HashSet<Service>();
@@ -425,7 +452,75 @@ public class TestParsingMain {
 		}
 
 	}
+	
+	/**
+	 * Implementation for computing all alternative routes that can produce
+	 * given concepts
+	 * @param conceptSet
+	 * @param routes
+	 */
+	@SuppressWarnings("unchecked")
+	private static void computeRoutes(Set<Concept> conceptSet,
+			Set<Set<Service>> routes) {
 
+		List<List<Service>> combinations;
+		
+		Set<Service> removableServiceSet = getRemovableServiceSet(conceptSet);
+	
+		combinations = CombinationHelper.findCombinations(removableServiceSet);
+		combinations.remove(new ArrayList<Service>());
+
+		if(removableServiceSet.size() == 0){
+			Set<Service> minimumServiceSet = new HashSet<Service>();
+			for (Concept c : conceptSet) {
+				minimumServiceSet.addAll(c.getOriginServiceSet());
+			}
+			routes.add(minimumServiceSet);
+		}
+		for(List<Service> combinationList : combinations){
+			
+			boolean valid = true;
+			boolean atom = false;
+			
+			Set<Service> combination = new HashSet<Service>();
+			combination.addAll(combinationList);
+			/**
+			 * clone conceptSet to currStatus
+			 */
+			Set<Concept> currStatus = new HashSet<Concept>();
+			for (Concept c : conceptSet) {
+				Concept concept = new Concept(c.getName());
+				concept.getOriginServiceSet().addAll(
+						c.getOriginServiceSet());
+				currStatus.add(concept);
+			}
+			/**
+			 * remove removable services from the clone
+			 */
+			for (Concept c : currStatus) {
+				c.getOriginServiceSet().removeAll(combination);
+//				for(Service s : combinationList){
+//					c.getOriginServiceSet().remove(s);
+//				}
+				if(c.getOriginServiceSet().size() == 0){
+					valid = false;
+					break;
+				}
+			}
+			if(getRemovableServiceSet(currStatus).size() == 0){
+				atom = true;
+			}
+
+			if(valid & atom){
+				Set<Service> minimumServiceSet = new HashSet<Service>();
+				for (Concept c : currStatus) {
+					minimumServiceSet.addAll(c.getOriginServiceSet());
+				}
+				routes.add(minimumServiceSet);
+			}
+		}
+
+	}
 	/**
 	 * backward search based on pg to prune redundant web services
 	 * @param pg
@@ -436,26 +531,39 @@ public class TestParsingMain {
 
 		Set<Service> minimumServiceSet;
 		Set<Concept> subGoalSet = pg.getGoalSet();
+		Set<Concept> leftGoalSet = new HashSet<Concept>();
 		Set<Set<Service>> routes = new HashSet<Set<Service>>();
 		Vector<Integer> routeCounters = new Vector<Integer>(); //debug purpose, will be remove
 		Map<Integer, Set<Service>> solutionMap = new HashMap<Integer, Set<Service>>();
-		
 		do {
 			/**
 			 * compute services that each concept is origin from
 			 */
 			Set<Service> actionSet = pg.getALevel(currLevel);
+			subGoalSet.addAll(leftGoalSet);
+			leftGoalSet.clear();
 			for (Concept g : subGoalSet) {
 				for (Service s : actionSet) {
 					if (s.getOutputConceptSet().contains(g)) {
 						g.addServiceToOrigin(s);
 					}
 				}
+				/**
+				 * check if the goal can be produced by current action level
+				 */
+				if(g.getOriginServiceSet().size() == 0){
+					leftGoalSet.add(g);
+				}
 			}
+			/**
+			 * defer the goals that cannot be produced in current action level
+			 */
+			subGoalSet.removeAll(leftGoalSet);
 
 			/**
 			 * compute all alternative routes that current level has  
 			 */
+//			computeRoutes_Old(subGoalSet, routes);
 			computeRoutes(subGoalSet, routes);
 //			System.out.println("Routes Size: " + routes.size());
 			
@@ -496,6 +604,12 @@ public class TestParsingMain {
 
 		} while (currLevel > 0);
 		
+		/**
+		 * debug checking if solution is valid
+		 */
+		if(leftGoalSet.size() != 0){
+			System.out.println("**Solution is NOT VALID!");
+		}
 		return routeCounters; //temperate for debug, will be removed!
 	}
 
