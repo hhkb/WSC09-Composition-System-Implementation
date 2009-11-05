@@ -6,7 +6,7 @@ package ca.concordia.pga.models;
  * @author Ludeng Zhao(Eric)
  * 
  */
-public class UniNameObject implements Comparable{
+public class UniNameObject extends Object implements Comparable<UniNameObject>{
 
 	private String name;
 
@@ -30,7 +30,6 @@ public class UniNameObject implements Comparable{
 		} else {
 			return this.equals(o);
 		}
-
 	}
 
 	@Override
@@ -44,12 +43,12 @@ public class UniNameObject implements Comparable{
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		UniNameObject n = (UniNameObject) o;
+	public int compareTo(UniNameObject o) {
 		Integer v1 = Integer.parseInt(this.name.replaceAll("\\D+", ""));
-		Integer v2 = Integer.parseInt(n.name.replaceAll("\\D+", ""));
+		Integer v2 = Integer.parseInt(o.name.replaceAll("\\D+", ""));
 	
 		return v1.compareTo(v2);
 	}
+
 
 }

@@ -34,8 +34,8 @@ import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
 public class TestParsingMain {
 
 	// change the Prefix URL according your environment
-//	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset03/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset04/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset03/";
+//	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
 	// static final String WSLA_URL = PREFIX_URL +
@@ -521,9 +521,11 @@ public class TestParsingMain {
 		}
 
 	}
+	
 	/**
-	 * backward search based on pg to prune redundant web services
+	 * Backward search based on PG to prune redundant web services
 	 * @param pg
+	 * @return routeCouters
 	 */
 	private static Vector<Integer> refineSolution(PlanningGraph pg) {
 
@@ -565,7 +567,6 @@ public class TestParsingMain {
 			 */
 //			computeRoutes_Old(subGoalSet, routes);
 			computeRoutes(subGoalSet, routes);
-//			System.out.println("Routes Size: " + routes.size());
 			
 			/**
 			 * get the route with minimum web services to invoke
