@@ -83,6 +83,9 @@ public class Concept extends UniNameObject {
 		return originServiceSet;
 	}
 
-
+	public void resetServiceIndex(){
+		this.servicesIndex = new HashSet<Service>();
+		this.originServiceSet = new HashSet<Service>();
+	}
 	
 }

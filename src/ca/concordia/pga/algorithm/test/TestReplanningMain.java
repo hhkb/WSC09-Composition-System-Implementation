@@ -31,10 +31,10 @@ import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
  * @author Ludeng Zhao(Eric)
  * 
  */
-public class TestParsingMain {
+public class TestReplanningMain {
 
 	// change the Prefix URL according your environment
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset03/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset02/";
 //	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
@@ -397,63 +397,6 @@ public class TestParsingMain {
 	}
 
 	/**
-	 * (Old) Recursive (depth first) implementation for computing all alternative routes that can produce
-	 * given concepts
-	 * @param conceptSet
-	 * @param routes
-	 */
-	private static void computeRoutes_Old(Set<Concept> conceptSet,
-			Set<Set<Service>> routes) {
-
-		Set<Service> removableServiceSet = new HashSet<Service>();
-		Set<Service> unRemovableServiceSet = new HashSet<Service>();
-		/**
-		 * get removable service
-		 */
-		for (Concept c : conceptSet) {
-			if (c.getOriginServiceSet().size() > 1) {
-				removableServiceSet.addAll(c.getOriginServiceSet());
-			} else if (c.getOriginServiceSet().size() == 1) {
-				unRemovableServiceSet.addAll(c.getOriginServiceSet());
-			}
-		}
-
-		removableServiceSet.removeAll(unRemovableServiceSet);
-
-		if (removableServiceSet.size() > 0) {
-			for (Service s : removableServiceSet) {
-				/**
-				 * clone conceptSet to currStatus
-				 */
-				Set<Concept> currStatus = new HashSet<Concept>();
-				for (Concept c : conceptSet) {
-					Concept concept = new Concept(c.getName());
-					concept.getOriginServiceSet().addAll(
-							c.getOriginServiceSet());
-					currStatus.add(concept);
-				}
-				/**
-				 * remove removable services from the clone
-				 */
-				for (Concept c : currStatus) {
-					c.getOriginServiceSet().remove(s);
-				}
-				/**
-				 * recursive the process
-				 */
-				computeRoutes_Old(currStatus, routes);
-			}
-		} else {
-			Set<Service> minimumServiceSet = new HashSet<Service>();
-			for (Concept c : conceptSet) {
-				minimumServiceSet.addAll(c.getOriginServiceSet());
-			}
-			routes.add(minimumServiceSet);
-		}
-
-	}
-	
-	/**
 	 * Implementation for computing all alternative routes that can produce
 	 * given concepts
 	 * @param conceptSet
@@ -614,93 +557,10 @@ public class TestParsingMain {
 		return routeCounters; //temperate for debug, will be removed!
 	}
 
-	/**
-	 * @param args
-	 * @throws DocumentException
-	 */
-	public static void main(String[] args) {
-
-		PlanningGraph pg = new PlanningGraph();
-
-		Map<String, Concept> conceptMap = new HashMap<String, Concept>();
-		Map<String, Thing> thingMap = new HashMap<String, Thing>();
-		Map<String, Service> serviceMap = new HashMap<String, Service>();
-		Map<String, Param> paramMap = new HashMap<String, Param>();
-
-		Set<Service> invokedServiceSet = new HashSet<Service>();
-		Set<Service> currInvokableServiceSet = new HashSet<Service>();
-		Set<Service> currNonInvokableServiceSet = new HashSet<Service>();
-		Set<Concept> knownConceptSet; // shortcut to pg's current PLevel
-
-		Date initStart = new Date();
-		try {
-			parseTaxonomyDocument(conceptMap, thingMap, TAXONOMY_URL);
-			parseServicesDocument(serviceMap, paramMap, conceptMap, thingMap,
-					SERVICES_URL);
-			// parseWSLADocument(serviceMap, WSLA_URL);
-		} catch (DocumentException e) {
-
-			e.printStackTrace();
-		}
-
-		buildInvertedIndex(conceptMap, serviceMap);
-		Date initEnd = new Date();
-
-		System.out.println("Initializing Time "
-				+ (initEnd.getTime() - initStart.getTime()));
-
-		System.out.println("Concepts size " + conceptMap.size());
-		System.out.println("Things size " + thingMap.size());
-		System.out.println("Param size " + paramMap.size());
-		System.out.println("Services size " + serviceMap.size());
-
-		/**
-		 * print out the content of inverted index
-		 */
-		// System.out.println("**********************************");
-		// System.out.println("********Inverted Index************");
-		// System.out.println("**********************************");
-		// for (String key : conceptMap.keySet()) {
-		// Concept concept = conceptMap.get(key);
-		// if (concept.getServicesIndex().size() > 0) {
-		// System.out.print(concept.getName() + " ===> ");
-		// for (Service s : concept.getServicesIndex()) {
-		// System.out.print(s.getName() + " | ");
-		// }
-		// System.out.println("");
-		//		
-		// }
-		// }
-
-
-
-		/**
-		 * begin the algorithm implementation
-		 */
-
-		try {
-			parseChallengeDocument(paramMap, conceptMap, thingMap, pg,
-					CHALLENGE_URL);
-		} catch (DocumentException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println();
-		System.out.println("Given Concepts: ");
-		for (Concept c : pg.getPLevel(0)) {
-			System.out.print(c + " | ");
-		}
-		System.out.println();
-		System.out.println("Goal Concepts: ");
-		for (Concept c : pg.getGoalSet()) {
-			System.out.print(c + " | ");
-		}
-		System.out.println();
-
-		/**
-		 * PG Algorithm Implementation
-		 */
-		Date compStart = new Date(); // start composition checkpoint
+	
+	private static boolean generatePG(Set<Concept> knownConceptSet, Set<Service> currInvokableServiceSet,
+			Set<Service> currNonInvokableServiceSet, Set<Service> invokedServiceSet,
+			PlanningGraph pg){
 		int currentLevel = 0;
 		do {
 			/**
@@ -760,12 +620,94 @@ public class TestParsingMain {
 		} while (!knownConceptSet.containsAll(pg.getGoalSet())
 				& !currInvokableServiceSet.isEmpty());
 
+		return knownConceptSet.containsAll(pg.getGoalSet());
+	}
+	
+	/**
+	 * @param args
+	 * @throws DocumentException
+	 */
+	public static void main(String[] args) {
+
+		PlanningGraph pg = new PlanningGraph();
+
+		Map<String, Concept> conceptMap = new HashMap<String, Concept>();
+		Map<String, Thing> thingMap = new HashMap<String, Thing>();
+		Map<String, Service> serviceMap = new HashMap<String, Service>();
+		Map<String, Param> paramMap = new HashMap<String, Param>();
+
+		Set<Service> invokedServiceSet = new HashSet<Service>();
+		Set<Service> currInvokableServiceSet = new HashSet<Service>();
+		Set<Service> currNonInvokableServiceSet = new HashSet<Service>();
+		Set<Concept> knownConceptSet = null; // shortcut to pg's current PLevel
+		
+		Set<Concept> givenConceptSet = new HashSet<Concept>();
+		Set<Concept> goalConceptSet = new HashSet<Concept>();
+
+		Date initStart = new Date();
+		try {
+			parseTaxonomyDocument(conceptMap, thingMap, TAXONOMY_URL);
+			parseServicesDocument(serviceMap, paramMap, conceptMap, thingMap,
+					SERVICES_URL);
+			// parseWSLADocument(serviceMap, WSLA_URL);
+		} catch (DocumentException e) {
+
+			e.printStackTrace();
+		}
+
+		buildInvertedIndex(conceptMap, serviceMap);
+		Date initEnd = new Date();
+
+		System.out.println("Initializing Time "
+				+ (initEnd.getTime() - initStart.getTime()));
+
+		System.out.println("Concepts size " + conceptMap.size());
+		System.out.println("Things size " + thingMap.size());
+		System.out.println("Param size " + paramMap.size());
+		System.out.println("Services size " + serviceMap.size());
+
+
+
+		/**
+		 * begin executing algorithm
+		 */
+
+		try {
+			parseChallengeDocument(paramMap, conceptMap, thingMap, pg,
+					CHALLENGE_URL);
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println();
+		System.out.println("Given Concepts: ");
+		for (Concept c : pg.getPLevel(0)) {
+			givenConceptSet.add(c);
+			System.out.print(c + " | ");
+		}
+		System.out.println();
+		System.out.println("Goal Concepts: ");
+		for (Concept c : pg.getGoalSet()) {
+			goalConceptSet.add(c);
+			System.out.print(c + " | ");
+		}
+		System.out.println();
+
+		/**
+		 * PG Algorithm Implementation
+		 */
+		Date compStart = new Date(); // start composition checkpoint
+		
+		boolean goalFound = generatePG(knownConceptSet,currInvokableServiceSet,
+			currNonInvokableServiceSet,invokedServiceSet,
+			pg);
+		
 		Date compEnd = new Date(); // end composition checkpoint
 
 		/**
 		 * Print out the composition result
 		 */
-		if (knownConceptSet.containsAll(pg.getGoalSet())) {
+		if (goalFound) {
 
 			/**
 			 * printout PG status (before pruning)
@@ -778,7 +720,6 @@ public class TestParsingMain {
 			System.out.println("Services Invoked: " + invokedServiceSet.size());
 			System.out.println("=============================");
 
-
 			
 			/**
 			 * do backward search to remove redundancy (pruning PG)
@@ -786,6 +727,9 @@ public class TestParsingMain {
 			Vector<Integer> routesCounters = refineSolution(pg);
 			Date refineEnd = new Date(); //refinement end checkpoint
 			
+			/**
+			 * printout backward search status
+			 */
 			System.out.println();
 			System.out.println("===================================");
 			System.out.println("===========After Pruning===========");
@@ -823,45 +767,149 @@ public class TestParsingMain {
 		}
 
 		/**
-		 * Experiment showing inverted index working faster than normal approach
+		 * remove n% services from serviceMap
 		 */
-		// Set<Service> invokableSet1 = new HashSet<Service>();
-		// Set<Service> invokableSet2 = new HashSet<Service>();
-		// Set<Service> notInvokableSet2 = new HashSet<Service>();
-		// Date t1 = new Date();
-		// for (int i = 0; i < 1000; i++) {
-		// invokableSet1.clear();
-		// for (String key : serviceMap.keySet()) {
-		// Service s = serviceMap.get(key);
-		// if (pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
-		// invokableSet1.add(s);
-		// }
-		// }
-		//
-		// }
-		// Date t2 = new Date();
-		//
-		// Date t3 = new Date();
-		// for (int i = 0; i < 1000; i++) {
-		// invokableSet2.clear();
-		// notInvokableSet2.clear();
-		// for (Concept c : pg.getPLevel(0)) {
-		// invokableSet2.addAll(c.getServicesIndex());
-		// }
-		//
-		// for (Service s : invokableSet2) {
-		// if (!pg.getPLevel(0).containsAll(s.getInputConceptSet())) {
-		// notInvokableSet2.add(s);
-		// }
-		// }
-		// invokableSet2.removeAll(notInvokableSet2);
-		// }
-		// Date t4 = new Date();
-		//
-		// System.out.println("\n\nfirst timer: " + (t2.getTime() -
-		// t1.getTime()));
-		// System.out
-		// .println("\n\nsecond timer: " + (t4.getTime() - t3.getTime()));
+		int originalServiceMapSize;
+		int changedServiceMapSize;
+		float changedRate;
+		
+		originalServiceMapSize = serviceMap.size();
+		Set<String> removedServiceKeySet = new HashSet<String>();
+		for(String key : serviceMap.keySet()){
+			if(Math.random() <= 0.25){
+				removedServiceKeySet.add(key);
+			}
+		}
+		for(String key : removedServiceKeySet){
+			serviceMap.remove(key);
+		}
+		changedServiceMapSize = serviceMap.size();
+		changedRate = (float)(originalServiceMapSize-changedServiceMapSize)/(float)originalServiceMapSize*100;
+		System.out.println();
+		System.out.println("======================================");
+		System.out.println("===========Removing Services==========");				
+		System.out.println("======================================");		
+		System.out.println("Original ServiceMap size: " + originalServiceMapSize);
+		System.out.println("Updated ServiceMap size: " + changedServiceMapSize);
+		System.out.println("Changed rate: " + changedRate +"%");
+		
+		System.out.println("======================================");
+		System.out.println("===========Replanning Start===========");				
+		System.out.println("======================================");	
 
+		Date replanningStart = new Date(); // start replanning checkpoint
+
+		/**
+		 * reset inverted index
+		 */
+		for(String key : conceptMap.keySet()){
+			Concept concept = conceptMap.get(key);
+			concept.resetServiceIndex();
+		}
+		buildInvertedIndex(conceptMap, serviceMap);
+		
+		/**
+		 * reset PG
+		 */
+		pg = new PlanningGraph();
+		pg.addPLevel(givenConceptSet);
+		pg.addALevel(new HashSet<Service>());
+		pg.setGoalSet(goalConceptSet);
+		
+		System.out.println();
+		System.out.println("Given Concepts: ");
+		for (Concept c : pg.getPLevel(0)) {
+			System.out.print(c + " | ");
+		}
+		System.out.println();
+		System.out.println("Goal Concepts: ");
+		for (Concept c : pg.getGoalSet()) {
+			System.out.print(c + " | ");
+		}
+		System.out.println();
+
+		
+		/**
+		 * reset params
+		 */
+		invokedServiceSet = new HashSet<Service>();
+		currInvokableServiceSet = new HashSet<Service>();
+		currNonInvokableServiceSet = new HashSet<Service>();
+		knownConceptSet = null; // shortcut to pg's current PLevel
+		
+		/**
+		 * PG Algorithm Implementation
+		 */
+		
+		goalFound = generatePG(knownConceptSet,currInvokableServiceSet,
+			currNonInvokableServiceSet,invokedServiceSet,
+			pg);
+		
+		Date replanningEnd = new Date(); // end composition checkpoint
+
+		/**
+		 * Print out the composition result
+		 */
+		if (goalFound) {
+
+			/**
+			 * printout PG status (before pruning)
+			 */
+			System.out.println("\n=========Goal Found=========");
+			System.out.println("PG Composition Time: "
+					+ (replanningEnd.getTime() - replanningStart.getTime()) + "ms");
+			System.out.println("Execution Length: "
+					+ (pg.getALevels().size() - 1));
+			System.out.println("Services Invoked: " + invokedServiceSet.size());
+			System.out.println("=============================");
+
+			
+			/**
+			 * do backward search to remove redundancy (pruning PG)
+			 */
+			Vector<Integer> routesCounters = refineSolution(pg);
+			Date refineEnd = new Date(); //refinement end checkpoint
+			
+			/**
+			 * printout backward search status
+			 */
+			System.out.println();
+			System.out.println("===================================");
+			System.out.println("===========After Pruning===========");
+			System.out.println("===================================");
+
+			int invokedServiceCount = 0;
+			for(int i=1; i<pg.getALevels().size(); i++){
+				System.out.println("\n*********Action Level " + i
+						+ " (alternative routes:" 
+						+ routesCounters.get(routesCounters.size() - i) + ") *******");
+				for (Service s : pg.getALevel(i)) {
+					System.out.println(s);
+					invokedServiceCount++;
+				}
+			}
+			System.out.println("\n=================Status=================");
+			System.out.println("Total(including PG) Composition Time: "
+					+ (refineEnd.getTime() - replanningStart.getTime()) + "ms");
+			System.out.println("Execution Length: "
+					+ (pg.getALevels().size() - 1));
+			System.out.println("Services Invoked: " + invokedServiceCount);			
+			System.out.println("==================End===================");
+
+			/**
+			 * generate solution file
+			 */
+//			try {
+//				generateSolution(pg);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+
+		} else {
+			System.out.println("\n=========Goal @NOT@ Found=========");
+		}
+		System.out.println("======================================");
+		System.out.println("===========Replanning End=============");				
+		System.out.println("======================================");	
 	}
 }
