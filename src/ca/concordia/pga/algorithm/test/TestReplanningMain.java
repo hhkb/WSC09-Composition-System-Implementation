@@ -776,7 +776,7 @@ public class TestReplanningMain {
 		originalServiceMapSize = serviceMap.size();
 		Set<String> removedServiceKeySet = new HashSet<String>();
 		for(String key : serviceMap.keySet()){
-			if(Math.random() <= 0.25){
+			if(Math.random() <= 0.20){
 				removedServiceKeySet.add(key);
 			}
 		}
@@ -845,7 +845,7 @@ public class TestReplanningMain {
 			currNonInvokableServiceSet,invokedServiceSet,
 			pg);
 		
-		Date replanningEnd = new Date(); // end composition checkpoint
+		Date planningEnd = new Date(); // end composition checkpoint
 
 		/**
 		 * Print out the composition result
@@ -857,7 +857,7 @@ public class TestReplanningMain {
 			 */
 			System.out.println("\n=========Goal Found=========");
 			System.out.println("PG Composition Time: "
-					+ (replanningEnd.getTime() - replanningStart.getTime()) + "ms");
+					+ (planningEnd.getTime() - replanningStart.getTime()) + "ms");
 			System.out.println("Execution Length: "
 					+ (pg.getALevels().size() - 1));
 			System.out.println("Services Invoked: " + invokedServiceSet.size());
