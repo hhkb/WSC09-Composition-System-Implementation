@@ -16,6 +16,7 @@ public class Service extends UniNameObject {
 	private Set<Service> equivalentServiceSet;
 	private int responseTime;
 	private int throughput;
+	private Integer score;
 
 	public Service(String name) {
 		super(name);
@@ -23,8 +24,16 @@ public class Service extends UniNameObject {
 		outputParamSet = new HashSet<Param>();
 		inputConceptSet = new HashSet<Concept>();
 		outputConceptSet = new HashSet<Concept>();
+		score = 0;
 	}
-
+	
+	public int compareTo(Service s) {
+		Integer v1 = score;
+		Integer v2 = s.score;
+	
+		return v1.compareTo(v2);
+	}
+	
 	public void addInputParam(Param param){
 		this.inputParamSet.add(param);
 	}
@@ -79,6 +88,14 @@ public class Service extends UniNameObject {
 
 	public void setThroughput(int throughput) {
 		this.throughput = throughput;
+	}
+
+	public Integer getScore() {
+		return score;
+	}
+
+	public void setScore(Integer score) {
+		this.score = score;
 	}
 
 	

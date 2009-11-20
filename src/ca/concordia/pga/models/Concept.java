@@ -17,7 +17,10 @@ public class Concept extends UniNameObject {
 	private Set<Service> originServiceSet;
 	private Set<Concept> parentConceptsIndex;
 	private Set<Concept> childrenConceptsIndex;
-
+	private Set<Service> producedByServices;
+	private Set<Service> usedByServices;
+	private boolean rin;
+	
 	public Concept(String name) {
 		super(name);
 		this.root = false;
@@ -25,6 +28,9 @@ public class Concept extends UniNameObject {
 		this.originServiceSet = new HashSet<Service>();
 		this.parentConceptsIndex = new HashSet<Concept>();
 		this.childrenConceptsIndex = new HashSet<Concept>();
+		this.producedByServices = new HashSet<Service>();
+		this.usedByServices = new HashSet<Service>();
+		this.rin = false;
 	}
 
 	public String getDirectParantName() {
@@ -87,5 +93,31 @@ public class Concept extends UniNameObject {
 		this.servicesIndex = new HashSet<Service>();
 		this.originServiceSet = new HashSet<Service>();
 	}
+
+	public void addProducedByService(Service service){
+		this.producedByServices.add(service);
+	}
+	
+	public Set<Service> getProducedByServices() {
+		return producedByServices;
+	}
+
+	public void addUsedByService(Service service){
+		this.usedByServices.add(service);
+	}
+	
+	public Set<Service> getUsedByServices() {
+		return usedByServices;
+	}
+
+	public boolean isRin() {
+		return rin;
+	}
+
+	public void setRin(boolean rin) {
+		this.rin = rin;
+	}
+	
+	
 	
 }
