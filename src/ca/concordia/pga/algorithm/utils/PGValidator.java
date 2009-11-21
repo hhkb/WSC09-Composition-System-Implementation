@@ -15,18 +15,29 @@ public class PGValidator {
 	public static boolean debug(PlanningGraph pg, Map<String, Service> serviceMap,
 			Map<String, Concept> conceptMap, Map<String, Thing> thingMap,
 			Map<String, Param> paramMap){
-//		con144093309
-		Concept con = new Concept("con144093309");
-		int currentLevel = 1;
-		do{
-			for(Service s : pg.getALevel(currentLevel)){
-				if(s.getOutputConceptSet().contains(con)){
-					System.out.println("Found in Level " + currentLevel);
-					return true;
-				}
-			}
-			currentLevel++;
-		}while(currentLevel < pg.getALevels().size());
+
+		Concept con = conceptMap.get("con835752772");
+		System.out.println("Provided by: ");
+		for(Service sp : con.getProducedByServices()){
+			System.out.print(sp + " | ");
+		}
+		System.out.println("\n");
+		
+//		int currentLevel = 1;
+//		do{
+//			for(Service s : pg.getALevel(currentLevel)){
+//				if(s.getOutputConceptSet().contains(con)){
+//					System.out.println(con + " Found in Level " + currentLevel);
+//					System.out.println("Provided by: ");
+//					for(Service sp : con.getProducedByServices()){
+//						System.out.print(sp + " | ");
+//					}
+//					System.out.println("\n");
+//					return true;
+//				}
+//			}
+//			currentLevel++;
+//		}while(currentLevel < pg.getALevels().size());
 		return false;	
 
 	}
@@ -46,25 +57,42 @@ public class PGValidator {
 
 			for(Service s : pg.getALevel(currentLevel)){
 				if(!pg.getPLevel(currentLevel-1).containsAll(s.getInputConceptSet())){
+					System.out.println("Service (" + s + ") cannot be invoked");
 					return false;
 				}
 				knownConceptSet.addAll(s.getOutputConceptSet());
 			}
-//
-//			System.out.println("\nPG PLevel: ");
-//			for(Concept c : pg.getPLevel(currentLevel)){
-//				System.out.print(c + " ");
-//			}
-//			System.out.println("\nShould be: ");			
-//			for(Concept c : knownConceptSet){
-//				System.out.print(c + " ");
-//			}
-//			System.out.println();
+
+			System.out.println();
 			
 			/**
 			 * check if there is invalid concept
 			 */
 			if(!pg.getPLevel(currentLevel).equals(knownConceptSet)){
+				System.out.println("\nPG PLevel " + currentLevel + ": " + pg.getPLevel(currentLevel).size());
+				for(Concept c : pg.getPLevel(currentLevel)){
+					System.out.print(c + " ");
+				}
+				System.out.println("\nShould be " + ": " + knownConceptSet.size());			
+				for(Concept c : knownConceptSet){
+					System.out.print(c + " ");
+				}
+				
+				Set<Concept> diffs = new HashSet<Concept>();
+				if(pg.getPLevel(currentLevel).size() > knownConceptSet.size()){
+					diffs.addAll(pg.getPLevel(currentLevel));
+					diffs.removeAll(knownConceptSet);
+				}else{
+					diffs.addAll(knownConceptSet);
+					diffs.removeAll(pg.getPLevel(currentLevel));
+				}
+
+				System.out.println("\nDiffs " + ": " + diffs.size());			
+				for(Concept c : diffs){
+					System.out.print(c + " ");
+				}
+				System.out.println("\n");
+				
 				return false;
 			}			
 			currentLevel++;
@@ -103,4 +131,41 @@ public class PGValidator {
 
 		return false;
 	}
+	
+	public static boolean comboValidate(PlanningGraph pg, Map<String, Service> serviceMap,
+			Map<String, Concept> conceptMap, Map<String, Thing> thingMap,
+			Map<String, Param> paramMap, Set<Concept> givenConceptSet){
+	
+		boolean isValid = true;
+		System.out.println("");
+		if(PGValidator.validate(pg, serviceMap, conceptMap, thingMap, paramMap)){
+			System.out.println("PG is VALID!");
+		}else{
+			System.out.println("PG is NOT VALID!");
+			isValid = false;
+		}
+		
+		if(PGValidator.validateGivenConcepts(pg, givenConceptSet)){
+			System.out.println("GivenConcepts is VALID!");
+		}else{
+			System.out.println("GivenConcepts is NOT VALID!");
+			isValid = false;
+		}
+		
+		if(PGValidator.validateGoalConcepts(pg, pg.getGoalSet())){
+			System.out.println("GoalConcepts is VALID!");
+		}else{
+			System.out.println("GoalConcepts is NOT VALID!");
+			isValid = false;
+		}
+		
+		if(PGValidator.hasEmptyLevel(pg)){
+			System.out.println("PG has empty level!");
+			isValid = false;
+		}else{
+			System.out.println("PG doesn't have empty level!");
+		}
+		return true;
+	}
+	
 }

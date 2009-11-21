@@ -25,7 +25,7 @@ public class RepairingEvaluator {
 		 */
 		t.addAll(g);
 		t.retainAll(a.getOutputConceptSet());
-		score += t.size();
+		score += t.size() * 10;
 		
 		/**
 		 * calculate p join aIn

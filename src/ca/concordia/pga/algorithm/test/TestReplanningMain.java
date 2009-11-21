@@ -22,7 +22,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import ca.concordia.pga.algorithm.PGAlgorithm;
-import ca.concordia.pga.algorithm.RefiningAlgorithm;
+import ca.concordia.pga.algorithm.RefinementAlgorithm;
 import ca.concordia.pga.algorithm.utils.CombinationHelper;
 import ca.concordia.pga.algorithm.utils.DocumentParser;
 import ca.concordia.pga.algorithm.utils.IndexBuilder;
@@ -133,7 +133,6 @@ public class TestReplanningMain {
 		 * Print out the composition result
 		 */
 		if (goalFound) {
-
 			/**
 			 * printout PG status (before pruning)
 			 */
@@ -149,7 +148,7 @@ public class TestReplanningMain {
 			/**
 			 * do backward search to remove redundancy (pruning PG)
 			 */
-			Vector<Integer> routesCounters = RefiningAlgorithm.refineSolution(pg);
+			Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
 			Date refineEnd = new Date(); //refinement end checkpoint
 			
 			/**
@@ -253,7 +252,6 @@ public class TestReplanningMain {
 		}
 		System.out.println();
 
-		
 		/**
 		 * reset params
 		 */
@@ -265,7 +263,6 @@ public class TestReplanningMain {
 		/**
 		 * PG Algorithm Implementation
 		 */
-		
 		goalFound = PGAlgorithm.generatePG(knownConceptSet,currInvokableServiceSet,
 			currNonInvokableServiceSet,invokedServiceSet,
 			pg);
@@ -292,7 +289,7 @@ public class TestReplanningMain {
 			/**
 			 * do backward search to remove redundancy (pruning PG)
 			 */
-			Vector<Integer> routesCounters = RefiningAlgorithm.refineSolution(pg);
+			Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
 			Date refineEnd = new Date(); //refinement end checkpoint
 			
 			/**

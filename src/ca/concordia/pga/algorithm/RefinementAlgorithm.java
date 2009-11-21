@@ -14,7 +14,12 @@ import ca.concordia.pga.models.Concept;
 import ca.concordia.pga.models.PlanningGraph;
 import ca.concordia.pga.models.Service;
 
-public class RefiningAlgorithm {
+/**
+ * 
+ * @author Ludeng Zhao(Eric)
+ *
+ */
+public class RefinementAlgorithm {
 	/**
 	 * compute removable service set from the given goal concept set
 	 * 

@@ -20,6 +20,7 @@ public class Concept extends UniNameObject {
 	private Set<Service> producedByServices;
 	private Set<Service> usedByServices;
 	private boolean rin;
+	private boolean goal;
 	
 	public Concept(String name) {
 		super(name);
@@ -31,6 +32,7 @@ public class Concept extends UniNameObject {
 		this.producedByServices = new HashSet<Service>();
 		this.usedByServices = new HashSet<Service>();
 		this.rin = false;
+		this.goal = false;
 	}
 
 	public String getDirectParantName() {
@@ -117,7 +119,14 @@ public class Concept extends UniNameObject {
 	public void setRin(boolean rin) {
 		this.rin = rin;
 	}
-	
-	
+
+	public boolean isGoal() {
+		return goal;
+	}
+
+	public void setGoal(boolean goal) {
+		this.goal = goal;
+	}
+
 	
 }
