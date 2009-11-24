@@ -199,12 +199,23 @@ public class TestReplanningMain {
 		
 		originalServiceMapSize = serviceMap.size();
 		Set<String> removedServiceKeySet = new HashSet<String>();
-		for(String key : serviceMap.keySet()){
-			if(Math.random() <= 0.05){
-				removedServiceKeySet.add(key);
-			}
-		}
+//		for(String key : serviceMap.keySet()){
+//			if(Math.random() <= 0.20){
+//				removedServiceKeySet.add(key);
+//			}
+//		}
+		Set<Service> removedServiceSet = new HashSet<Service>();
+		
+		removedServiceSet.add(serviceMap.get("serv18541048"));
+		removedServiceSet.add(serviceMap.get("serv1612205357"));
+		removedServiceSet.add(serviceMap.get("serv919521571"));
+//
+		serviceMap.remove("serv18541048");
+		serviceMap.remove("serv1612205357");
+		serviceMap.remove("serv919521571");
+
 		for(String key : removedServiceKeySet){
+			removedServiceSet.add(serviceMap.get(key));
 			serviceMap.remove(key);
 		}
 		changedServiceMapSize = serviceMap.size();

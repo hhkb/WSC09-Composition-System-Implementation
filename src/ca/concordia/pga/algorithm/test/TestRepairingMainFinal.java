@@ -159,12 +159,12 @@ public class TestRepairingMainFinal {
 
 			
 			removedServiceSet.add(serviceMap.get("serv18541048"));
-			removedServiceSet.add(serviceMap.get("serv502928173"));
-//			removedServiceSet.add(serviceMap.get("serv711224872"));
+			removedServiceSet.add(serviceMap.get("serv1612205357"));
+			removedServiceSet.add(serviceMap.get("serv919521571"));
 //	
 			serviceMap.remove("serv18541048");
-			serviceMap.remove("serv502928173");
-//			serviceMap.remove("serv711224872");
+			serviceMap.remove("serv1612205357");
+			serviceMap.remove("serv919521571");
 
 			for (String key : removedServiceKeySet) {
 				removedServiceSet.add(serviceMap.get(key));
@@ -321,28 +321,34 @@ public class TestRepairingMainFinal {
 				System.out.println("==================End===================");		
 			}else { //if PG is not valid or Goal is not satisfied
 		
+				pg.getALevel(8).add(serviceMap.get("serv783934155"));
 				
+				Date repairStart = new Date();
 				if(RepairAlgorithm.repair(pg, serviceMap, conceptMap, thingMap, paramMap)){
 					System.out.println("Repair Succeed!");
 
-					int invokedServiceCount2 = 0;
+					System.out.println();
+					System.out.println("===================================");
+					System.out.println("===========Repair Result===========");
+					System.out.println("=========(Before Refinement)=======");					
+					System.out.println("===================================");
+					int invokedServiceCount = 0;
 					for (int i = 1; i < pg.getALevels().size(); i++) {
 						System.out.println("\n*********Action Level " + i);
 						for (Service s : pg.getALevel(i)) {
 							System.out.println(s);
-							invokedServiceCount2++;
+							invokedServiceCount++;
 						}
 					}
 					/**
 					 * do backward search to remove redundancy (pruning PG)
 					 */
-					Date refineStart = new Date();
 					for(String key : conceptMap.keySet()){
 						Concept concept = conceptMap.get(key);
 						concept.getOriginServiceSet().clear();
 					}
 					Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
-					Date refineEnd = new Date(); // refinement end checkpoint
+					Date repairEnd = new Date(); // repair end checkpoint
 
 					/**
 					 * printout backward search status
@@ -350,9 +356,10 @@ public class TestRepairingMainFinal {
 					System.out.println();
 					System.out.println("===================================");
 					System.out.println("===========Repair Result===========");
+					System.out.println("=========(After Refinement)========");					
 					System.out.println("===================================");
 
-					int invokedServiceCount = 0;
+					invokedServiceCount = 0;
 					for (int i = 1; i < pg.getALevels().size(); i++) {
 						System.out.println("\n*********Action Level " + i
 								+ " (alternative routes:"
@@ -364,8 +371,8 @@ public class TestRepairingMainFinal {
 						}
 					}
 					System.out.println("\n=================Status=================");
-					System.out.println("Total(including PG) Composition Time: "
-							+ (refineEnd.getTime() - refineStart.getTime()) + "ms");
+					System.out.println("Total(Removal + Repair) Composition Time: "
+							+ (repairEnd.getTime() - repairStart.getTime()) + "ms");
 					System.out.println("Execution Length: "
 							+ (pg.getALevels().size() - 1));
 					System.out.println("Services Invoked: " + invokedServiceCount);

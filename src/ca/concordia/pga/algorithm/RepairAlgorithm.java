@@ -129,7 +129,6 @@ public class RepairAlgorithm {
 				/**
 				 * 3. Insert first service in candidate list to current ALevel. 
 				 * Add its outputs to PLevel(n). 
-				 * Add unstatisfied inputs (if any) to PLevel(n-1). 
 				 * Check if PLevel(n) still has unstatisfied subgoals. 
 				 * if yes, repeat step 1 unless candidates list become empty 
 				 * then return unrepairable.
@@ -141,14 +140,14 @@ public class RepairAlgorithm {
 				sortedCandidates.remove(0);
 				aLevel.add(candidate);
 				pLevel.addAll(candidate.getOutputConceptSet());
-				pg.getPLevel(currentLevel-1).addAll(candidate.getInputConceptSet());
+//				pg.getPLevel(currentLevel-1).addAll(candidate.getInputConceptSet());
 				System.out.println("CurrentSubGoalSet size: " + currentSubGoalSet.size());
 
 				currentSubGoalSet.removeAll(pg.getPLevel(currentLevel));
 				
 				System.out.println("Added: " + candidate + "(" + candidate.getScore() + ")" + " at: " + currentLevel);
 				System.out.println("sortedCandidates size: " + sortedCandidates.size());
-				System.out.println("CurrentSubGoalSet size: " + currentSubGoalSet.size());
+//				System.out.println("CurrentSubGoalSet size: " + currentSubGoalSet.size());
 				
 			}while(currentSubGoalSet.size() != 0 & sortedCandidates.size() > 0);
 			
@@ -161,7 +160,7 @@ public class RepairAlgorithm {
 			
 			/**
 			 * 4. compute subGoalSet which contains all broken preconditions 
-			 * and unstatisfied goals based on current PG status, if empty return PG
+			 * and unsatisfied goals based on current PG status, if empty return PG
 			 */
 			
 			/**
@@ -174,7 +173,7 @@ public class RepairAlgorithm {
 			
 			System.out.println("subGoalSet size: " + subGoalSet.size());
 			/**
-			 * 5. decrese level count by 1
+			 * 5. decrease level count by 1
 			 */
 			currentLevel--;
 			
