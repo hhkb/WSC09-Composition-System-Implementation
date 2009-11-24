@@ -134,6 +134,7 @@ public class RefinementAlgorithm {
 																// will be
 																// remove
 		Map<Integer, Set<Service>> solutionMap = new HashMap<Integer, Set<Service>>();
+		
 		do {
 			/**
 			 * compute services that each concept is origin from

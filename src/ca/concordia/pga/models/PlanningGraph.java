@@ -1,5 +1,6 @@
 package ca.concordia.pga.models;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
@@ -14,10 +15,13 @@ public class PlanningGraph {
 	private Vector<Set<Concept>> PLevels;
 	private Vector<Set<Service>> ALevels;
 	private Set<Concept> goalSet;
+	private Set<Concept> givenConceptSet;
 
 	public PlanningGraph() {
 		PLevels = new Vector<Set<Concept>>();
 		ALevels = new Vector<Set<Service>>();
+		goalSet = new HashSet<Concept>();
+		givenConceptSet = new HashSet<Concept>();
 	}
 
 	public Vector<Set<Concept>> getPLevels() {
@@ -68,6 +72,40 @@ public class PlanningGraph {
 
 	public void setGoalSet(Set<Concept> goalSet) {
 		this.goalSet = goalSet;
+	}
+	
+	public Set<Concept> getGivenConceptSet() {
+		return givenConceptSet;
+	}
+
+	public void setGivenConceptSet(Set<Concept> givenConceptSet) {
+		this.givenConceptSet = givenConceptSet;
+	}
+
+	public void insertALevel(int level, Set<Service> aLevel){
+		this.ALevels.add(level, aLevel);
+	}
+	
+	public void insertPLevel(int level, Set<Concept> pLevel){
+		this.PLevels.add(level, pLevel);
+	}
+	
+	public PlanningGraph clone(){
+		PlanningGraph pg = new PlanningGraph();
+		for(Set<Service> aLevel : this.getALevels()){
+			Set<Service> newALevel = new HashSet<Service>();
+			newALevel.addAll(aLevel);
+			pg.addALevel(newALevel);
+		}
+		for(Set<Concept> pLevel : this.getPLevels()){
+			Set<Concept> newPLevel = new HashSet<Concept>();
+			newPLevel.addAll(pLevel);
+			pg.addPLevel(newPLevel);
+		}
+		pg.getGoalSet().addAll(this.getGoalSet());
+		pg.getGivenConceptSet().addAll(this.getGivenConceptSet());
+		
+		return pg;
 	}
 
 }

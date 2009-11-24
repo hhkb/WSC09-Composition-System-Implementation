@@ -17,6 +17,7 @@ import org.dom4j.DocumentException;
 import ca.concordia.pga.algorithm.PGAlgorithm;
 import ca.concordia.pga.algorithm.RefinementAlgorithm;
 import ca.concordia.pga.algorithm.RemovalAlgorithm;
+import ca.concordia.pga.algorithm.RepairAlgorithm;
 import ca.concordia.pga.algorithm.utils.DocumentParser;
 import ca.concordia.pga.algorithm.utils.IndexBuilder;
 import ca.concordia.pga.algorithm.utils.PGValidator;
@@ -98,6 +99,7 @@ public class TestRepairingMainFinal {
 			givenConceptSet.add(c);
 			System.out.print(c + " | ");
 		}
+		pg.getGivenConceptSet().addAll(pg.getPLevel(0));
 		System.out.println();
 		System.out.println("Goal Concepts: ");
 		for (Concept c : pg.getGoalSet()) {
@@ -148,27 +150,28 @@ public class TestRepairingMainFinal {
 			Set<String> removedServiceKeySet = new HashSet<String>();
 			Set<Service> removedServiceSet = new HashSet<Service>();
 //			for (String key : serviceMap.keySet()) {
-//				if (Math.random() <= 0.01) {
+//				if (Math.random() <= 0.10) {
 //					removedServiceKeySet.add(key);
 //				}
 //			}
 			
-			System.out.println("Size: " + serviceMap.get("serv1681637590").getOutputConceptSet().size());
-			for(Concept c : serviceMap.get("serv1681637590").getOutputConceptSet()){
-				System.out.print(c + " | ");
-			}
-			System.out.println("\n");
+//			PGValidator.debugService(pg, serviceMap, conceptMap, thingMap, paramMap, "serv1056747493");
+
 			
-//			removedServiceSet.add(serviceMap.get("serv502928173"));
-			removedServiceSet.add(serviceMap.get("serv1681637590"));
-//			serviceMap.remove("serv502928173");
-			serviceMap.remove("serv1681637590");
+			removedServiceSet.add(serviceMap.get("serv18541048"));
+			removedServiceSet.add(serviceMap.get("serv502928173"));
+//			removedServiceSet.add(serviceMap.get("serv711224872"));
+//	
+			serviceMap.remove("serv18541048");
+			serviceMap.remove("serv502928173");
+//			serviceMap.remove("serv711224872");
+
 			for (String key : removedServiceKeySet) {
 				removedServiceSet.add(serviceMap.get(key));
 				serviceMap.remove(key);
 			}
 			
-		
+
 			/**
 			 * print out status after removal
 			 */
@@ -192,8 +195,6 @@ public class TestRepairingMainFinal {
 			System.out.println("======================================");
 			System.out.println("===========Repairing Start===========");
 			System.out.println("======================================");
-
-		
 
 			
 			/**
@@ -258,7 +259,12 @@ public class TestRepairingMainFinal {
 				currentLevel++;
 			}while(currentLevel < pg.getALevels().size());
 			
-			
+			for(String key : conceptMap.keySet()){
+				Concept concept = conceptMap.get(key);
+				concept.getOriginServiceSet().clear();
+			}
+			RefinementAlgorithm.refineSolution(pg);
+
 			/**
 			 * remove related services in PG
 			 */
@@ -269,8 +275,7 @@ public class TestRepairingMainFinal {
 				System.out.print(c + " | ");
 			}
 			
-			PGValidator.debug(pg, serviceMap, conceptMap, thingMap, paramMap);
-			
+						
 			/**
 			 * validate PG
 			 */
@@ -281,6 +286,10 @@ public class TestRepairingMainFinal {
 				 * do backward search to remove redundancy (pruning PG)
 				 */
 				Date refineStart = new Date();
+				for(String key : conceptMap.keySet()){
+					Concept concept = conceptMap.get(key);
+					concept.getOriginServiceSet().clear();
+				}
 				Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
 				Date refineEnd = new Date(); // refinement end checkpoint
 
@@ -311,46 +320,61 @@ public class TestRepairingMainFinal {
 				System.out.println("Services Invoked: " + invokedServiceCount);
 				System.out.println("==================End===================");		
 			}else { //if PG is not valid or Goal is not satisfied
-				/**
-				 * define comparator for sorting services according heuristic scores
-				 */
-				Comparator<Service> serviceScoreComparator = new Comparator<Service>() {
-					public int compare(Service s1, Service s2) {
-						return s2.getScore().compareTo(s1.getScore());
+		
+				
+				if(RepairAlgorithm.repair(pg, serviceMap, conceptMap, thingMap, paramMap)){
+					System.out.println("Repair Succeed!");
+
+					int invokedServiceCount2 = 0;
+					for (int i = 1; i < pg.getALevels().size(); i++) {
+						System.out.println("\n*********Action Level " + i);
+						for (Service s : pg.getALevel(i)) {
+							System.out.println(s);
+							invokedServiceCount2++;
+						}
 					}
-				};
+					/**
+					 * do backward search to remove redundancy (pruning PG)
+					 */
+					Date refineStart = new Date();
+					for(String key : conceptMap.keySet()){
+						Concept concept = conceptMap.get(key);
+						concept.getOriginServiceSet().clear();
+					}
+					Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
+					Date refineEnd = new Date(); // refinement end checkpoint
 
-				int plevel = pg.getALevels().size() - 2;
-				List<Service> services = new ArrayList<Service>();
-				for (String key : serviceMap.keySet()) {
-					Service s = serviceMap.get(key);
-					int score = RepairingEvaluator.evaluate(pg.getGoalSet(), pg
-							.getPLevel(plevel), s);
-					s.setScore(score);
-					services.add(s);
-				}
+					/**
+					 * printout backward search status
+					 */
+					System.out.println();
+					System.out.println("===================================");
+					System.out.println("===========Repair Result===========");
+					System.out.println("===================================");
 
-				Collections.sort(services, serviceScoreComparator);
-				
-				System.out.println();
-				for(Service s : services){
-					System.out.println(s + " : " + s.getScore());
+					int invokedServiceCount = 0;
+					for (int i = 1; i < pg.getALevels().size(); i++) {
+						System.out.println("\n*********Action Level " + i
+								+ " (alternative routes:"
+								+ routesCounters.get(routesCounters.size() - i)
+								+ ") *******");
+						for (Service s : pg.getALevel(i)) {
+							System.out.println(s);
+							invokedServiceCount++;
+						}
+					}
+					System.out.println("\n=================Status=================");
+					System.out.println("Total(including PG) Composition Time: "
+							+ (refineEnd.getTime() - refineStart.getTime()) + "ms");
+					System.out.println("Execution Length: "
+							+ (pg.getALevels().size() - 1));
+					System.out.println("Services Invoked: " + invokedServiceCount);
+					System.out.println("==================End===================");	
+				}else{
+					System.out.println("Repair Failed!");
 				}
-				
-				
-				/**
-				 * printout PG status (before pruning)
-				 */
-				System.out.println("\n=========Goal Found=========");
-				System.out.println("PG Composition Time: "
-						+ (compEnd.getTime() - compStart.getTime()) + "ms");
-				System.out.println("Execution Length: "
-						+ (pg.getALevels().size() - 1));
-				System.out.println("Services Invoked: " + invokedServiceSet.size());
-				System.out.println("=============================");
+					
 			}
-
-
 
 
 		} else {

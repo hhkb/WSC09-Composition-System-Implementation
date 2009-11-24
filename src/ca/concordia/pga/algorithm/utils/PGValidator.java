@@ -12,6 +12,24 @@ import ca.concordia.pga.models.Thing;
 
 public class PGValidator {
 	
+	public static void debugService(PlanningGraph pg, Map<String, Service> serviceMap,
+			Map<String, Concept> conceptMap, Map<String, Thing> thingMap,
+			Map<String, Param> paramMap, String serviceName){
+		
+		Service service = serviceMap.get(serviceName);
+		System.out.println("Service " + serviceName);
+		System.out.println("Input: ");
+		for(Concept c : service.getInputConceptSet()){
+			System.out.print(c + " | ");
+		}
+		System.out.println("Output: ");
+		for(Concept c : service.getOutputConceptSet()){
+			System.out.print(c + " | ");
+		}
+		System.out.println();
+
+	}
+	
 	public static boolean debug(PlanningGraph pg, Map<String, Service> serviceMap,
 			Map<String, Concept> conceptMap, Map<String, Thing> thingMap,
 			Map<String, Param> paramMap){
@@ -49,6 +67,7 @@ public class PGValidator {
 
 		int currentLevel = 1;
 		Set<Concept> knownConceptSet = new HashSet<Concept>();
+		System.out.println();
 		do{
 			/**
 			 * check if each action can be invoked
@@ -63,7 +82,6 @@ public class PGValidator {
 				knownConceptSet.addAll(s.getOutputConceptSet());
 			}
 
-			System.out.println();
 			
 			/**
 			 * check if there is invalid concept
@@ -165,7 +183,7 @@ public class PGValidator {
 		}else{
 			System.out.println("PG doesn't have empty level!");
 		}
-		return true;
+		return isValid;
 	}
 	
 }
