@@ -194,6 +194,33 @@ public class RepairAlgorithm {
 			
 		}
 		
+		/**
+		 * Upon success:
+		 * Start from level 1
+		 * while level < levels.size()
+		 * 1. select each service in current ALevel, removed all its duplicate in higher ALevel.
+		 * 2. increse level count by 1
+		 */
+		
+		currentLevel = 1;
+		while(currentLevel < pg.getALevels().size()){
+			for(Service s : pg.getALevel(currentLevel)){
+				int higherLevel = currentLevel + 1;
+				while(higherLevel < pg.getALevels().size()){
+					Set<Service> duplicates = new HashSet<Service>();
+					for(Service hs : pg.getALevel(higherLevel)){
+						if(s.equals(hs)){
+							duplicates.add(hs);
+						}
+					}
+					if(pg.getALevel(higherLevel).removeAll(duplicates)){
+						System.out.println("duplicates removed!");
+					}
+					higherLevel++;
+				}
+			}
+			currentLevel++;
+		}
 		
 		return true;
 	}

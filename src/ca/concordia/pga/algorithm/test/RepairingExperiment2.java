@@ -31,7 +31,7 @@ import ca.concordia.pga.models.*;
  * @author Ludeng Zhao(Eric)
  * 
  */
-public class TestRepairingMainFinal {
+public class RepairingExperiment2 {
 
 	// change the Prefix URL according your environment
 	//static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset07/";
@@ -143,6 +143,15 @@ public class TestRepairingMainFinal {
 			PGValidator.comboValidate(pg, serviceMap, conceptMap, thingMap, paramMap, givenConceptSet);
 			
 
+			/**
+			 * prune PG
+			 */
+			RefinementAlgorithm.refineSolution(pg);
+
+			/**
+			 * reserve old PG status
+			 */
+			PlanningGraph oldpg = pg.clone();
 			
 			/**
 			 * remove services from serviceMap
@@ -153,32 +162,17 @@ public class TestRepairingMainFinal {
 			originalServiceMapSize = serviceMap.size();
 			Set<String> removedServiceKeySet = new HashSet<String>();
 			Set<Service> removedServiceSet = new HashSet<Service>();
-//			for (String key : serviceMap.keySet()) {
-//				if (Math.random() <= 0.05) {
-//					removedServiceKeySet.add(key);
-//				}
-//			}
-			
-//			PGValidator.debugService(pg, serviceMap, conceptMap, thingMap, paramMap, "serv1056747493");
-			
-			Set<Service> candidates = new HashSet<Service>();
-			/**
-			 * testset01
-			 */
-//			candidates.add(serviceMap.get("serv1056747493"));
-//			candidates.add(serviceMap.get("serv1126179726"));
-//			candidates.add(serviceMap.get("serv1195611959"));
-//			candidates.add(serviceMap.get("serv502928173"));
-//			candidates.add(serviceMap.get("serv2096592482"));
-//			candidates.add(serviceMap.get("serv18541048"));
-//			candidates.add(serviceMap.get("serv87973281"));
-//			candidates.add(serviceMap.get("serv850089338"));
-//			candidates.add(serviceMap.get("serv1612205357"));
-//			candidates.add(serviceMap.get("serv919521571"));
-			
-			/**
-			 * testset02
-			 */
+			for (String key : serviceMap.keySet()) {
+				if (Math.random() <= 0.18) {
+					removedServiceKeySet.add(key);
+				}
+			}
+			removedServiceKeySet.remove("serv1939094802");
+			removedServiceKeySet.remove("serv208204533");
+			removedServiceKeySet.remove("serv1663004376");
+//			removedServiceKeySet.remove("serv807605227");
+
+
 //			candidates.add(serviceMap.get("serv1222560119"));//cause failed
 //			candidates.add(serviceMap.get("serv1915243905"));//cause failed
 //			candidates.add(serviceMap.get("serv529876295"));
@@ -188,40 +182,6 @@ public class TestRepairingMainFinal {
 //			candidates.add(serviceMap.get("serv877037460"));
 //			candidates.add(serviceMap.get("serv114921441"));//cause failed
 //			candidates.add(serviceMap.get("serv807605227"));//cause failed
-//			candidates.add(serviceMap.get("serv184353674"));
-//			candidates.add(serviceMap.get("serv253785907"));
-//			candidates.add(serviceMap.get("serv1708585750"));
-//			candidates.add(serviceMap.get("serv323218140"));
-
-			/**
-			 * testset03
-			 */
-//			candidates.add(serviceMap.get("serv1939094802"));//cause failure
-//			candidates.add(serviceMap.get("serv208204533"));//cause failure
-//			candidates.add(serviceMap.get("serv1663004376"));//cause failure
-			candidates.add(serviceMap.get("serv1593572143"));
-			candidates.add(serviceMap.get("serv1524139910"));
-			candidates.add(serviceMap.get("serv2008527035"));
-			candidates.add(serviceMap.get("serv1385275444"));
-			candidates.add(serviceMap.get("serv1732436609"));
-			candidates.add(serviceMap.get("serv1248049522"));
-			candidates.add(serviceMap.get("serv1317481755"));
-			
-//			candidates.add(serviceMap.get("serv763260701"));
-//			candidates.add(serviceMap.get("serv1872537885"));
-//			candidates.add(serviceMap.get("serv891828653"));
-//			candidates.add(serviceMap.get("serv1584512439"));
-//			candidates.add(serviceMap.get("serv1653944672"));
-			do{
-				for(Service s : candidates){
-					if (Math.random() <= 0.10) {
-						removedServiceKeySet.add(s.getName());
-						break;
-					}		
-				}
-			}while(removedServiceKeySet.size() < 5);
-
-
 
 			for (String key : removedServiceKeySet) {
 				removedServiceSet.add(serviceMap.get(key));
@@ -320,18 +280,11 @@ public class TestRepairingMainFinal {
 				Concept concept = conceptMap.get(key);
 				concept.getOriginServiceSet().clear();
 			}
-			/**
-			 * prune PG
-			 */
-			RefinementAlgorithm.refineSolution(pg);
 
-			/**
-			 * reserve old PG status
-			 */
-			PlanningGraph oldpg = pg.clone();
 			
+			Date removalStart = new Date();
 			/**
-			 * remove related services in PG
+			 * remove services in PG
 			 */
 			Set<Concept> bp = RemovalAlgorithm.removeServcesFromPG(pg, removedServiceSet);
 			
@@ -379,7 +332,7 @@ public class TestRepairingMainFinal {
 				}
 				System.out.println("\n=================Status=================");
 				System.out.println("Total(including PG) Composition Time: "
-						+ (refineEnd.getTime() - refineStart.getTime()) + "ms");
+						+ (refineEnd.getTime() - removalStart.getTime()) + "ms");
 				System.out.println("Execution Length: "
 						+ (pg.getALevels().size() - 1));
 				System.out.println("Services Invoked: " + invokedServiceCount);
@@ -487,9 +440,6 @@ public class TestRepairingMainFinal {
 		} else {
 			System.out.println("\n=========Goal @NOT@ Found=========");
 		}
-
-
-		
 
 	}
 

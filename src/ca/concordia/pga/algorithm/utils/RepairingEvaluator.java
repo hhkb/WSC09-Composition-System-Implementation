@@ -33,7 +33,7 @@ public class RepairingEvaluator {
 		t.clear();
 		t.addAll(p);
 		t.retainAll(a.getInputConceptSet());
-		score += t.size();
+//		score += t.size();
 		
 		/**
 		 * calculate aIn not in p

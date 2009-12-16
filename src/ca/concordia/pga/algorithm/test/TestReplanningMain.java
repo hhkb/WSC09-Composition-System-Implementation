@@ -26,6 +26,7 @@ import ca.concordia.pga.algorithm.RefinementAlgorithm;
 import ca.concordia.pga.algorithm.utils.CombinationHelper;
 import ca.concordia.pga.algorithm.utils.DocumentParser;
 import ca.concordia.pga.algorithm.utils.IndexBuilder;
+import ca.concordia.pga.algorithm.utils.PlanStabilityEvaluator;
 import ca.concordia.pga.algorithm.utils.SolutionGenerator;
 import ca.concordia.pga.models.*;
 import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
@@ -40,7 +41,7 @@ public class TestReplanningMain {
 
 	// change the Prefix URL according your environment
 //	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset01/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset12/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
 	// static final String WSLA_URL = PREFIX_URL +
@@ -188,8 +189,14 @@ public class TestReplanningMain {
 
 		} else {
 			System.out.println("\n=========Goal @NOT@ Found=========");
+			
 		}
 
+		/**
+		 * reserve old PG status
+		 */
+		PlanningGraph oldpg = pg.clone();
+		
 		/**
 		 * remove n% services from serviceMap
 		 */
@@ -200,19 +207,79 @@ public class TestReplanningMain {
 		originalServiceMapSize = serviceMap.size();
 		Set<String> removedServiceKeySet = new HashSet<String>();
 //		for(String key : serviceMap.keySet()){
-//			if(Math.random() <= 0.20){
+//			if(Math.random() <= 0.03){
 //				removedServiceKeySet.add(key);
 //			}
 //		}
 		Set<Service> removedServiceSet = new HashSet<Service>();
 		
-		removedServiceSet.add(serviceMap.get("serv18541048"));
-		removedServiceSet.add(serviceMap.get("serv1612205357"));
-		removedServiceSet.add(serviceMap.get("serv919521571"));
-//
-		serviceMap.remove("serv18541048");
-		serviceMap.remove("serv1612205357");
-		serviceMap.remove("serv919521571");
+//		removedServiceKeySet.remove("serv1939094802");
+//		removedServiceKeySet.remove("serv208204533");
+//		removedServiceKeySet.remove("serv1663004376");
+		
+//		removedServiceSet.add(serviceMap.get("serv1195611959"));
+//		removedServiceSet.add(serviceMap.get("serv919521571"));
+//		removedServiceSet.add(serviceMap.get("serv87973281"));
+//		removedServiceSet.add(serviceMap.get("serv18541048"));
+//		removedServiceSet.add(serviceMap.get("serv1056747493"));
+
+
+//		serviceMap.remove("serv1195611959");
+//		serviceMap.remove("serv919521571");
+//		serviceMap.remove("serv87973281");
+//		serviceMap.remove("serv18541048");
+//		serviceMap.remove("serv1056747493");
+
+		Set<Service> candidates = new HashSet<Service>();
+//		candidates.add(serviceMap.get("serv1056747493"));
+//		candidates.add(serviceMap.get("serv1126179726"));
+//		candidates.add(serviceMap.get("serv1195611959"));
+//		candidates.add(serviceMap.get("serv502928173"));
+//		candidates.add(serviceMap.get("serv2096592482"));
+//		candidates.add(serviceMap.get("serv18541048"));
+//		candidates.add(serviceMap.get("serv87973281"));
+//		candidates.add(serviceMap.get("serv850089338"));
+//		candidates.add(serviceMap.get("serv1612205357"));
+//		candidates.add(serviceMap.get("serv919521571"));
+		
+		
+//		candidates.add(serviceMap.get("serv1222560119"));//cause failed
+//		candidates.add(serviceMap.get("serv1915243905"));//cause failed
+//		candidates.add(serviceMap.get("serv529876295"));
+//		candidates.add(serviceMap.get("serv668740761"));
+//		candidates.add(serviceMap.get("serv2123540604"));
+//		candidates.add(serviceMap.get("serv45489208"));
+//		candidates.add(serviceMap.get("serv877037460"));
+//		candidates.add(serviceMap.get("serv114921441"));//cause failed
+//		candidates.add(serviceMap.get("serv807605227"));//cause failed
+//		candidates.add(serviceMap.get("serv184353674"));
+//		candidates.add(serviceMap.get("serv253785907"));
+//		candidates.add(serviceMap.get("serv1708585750"));
+//		candidates.add(serviceMap.get("serv323218140"));
+		
+		/**
+		 * testset03
+		 */
+//		candidates.add(serviceMap.get("serv1939094802"));//cause failure
+//		candidates.add(serviceMap.get("serv208204533"));//cause failure
+//		candidates.add(serviceMap.get("serv1663004376"));//cause failure
+//		candidates.add(serviceMap.get("serv1593572143"));
+//		candidates.add(serviceMap.get("serv1524139910"));
+//		candidates.add(serviceMap.get("serv2008527035"));
+//		candidates.add(serviceMap.get("serv1385275444"));
+//		candidates.add(serviceMap.get("serv1732436609"));
+//		candidates.add(serviceMap.get("serv1248049522"));
+//		candidates.add(serviceMap.get("serv1317481755"));
+		
+//		do{
+//			for(Service s : candidates){
+//				if (Math.random() <= 0.10) {
+//					removedServiceKeySet.add(s.getName());
+//					break;
+//				}		
+//			}
+//		}while(removedServiceKeySet.size() < 2);
+
 
 		for(String key : removedServiceKeySet){
 			removedServiceSet.add(serviceMap.get(key));
@@ -296,7 +363,7 @@ public class TestReplanningMain {
 			System.out.println("Services Invoked: " + invokedServiceSet.size());
 			System.out.println("=============================");
 
-			
+
 			/**
 			 * do backward search to remove redundancy (pruning PG)
 			 */
@@ -321,12 +388,20 @@ public class TestReplanningMain {
 					invokedServiceCount++;
 				}
 			}
+			
+			/**
+			 * compute plan distance
+			 */
+			int planDistance;
+			planDistance = PlanStabilityEvaluator.evaluate(oldpg, pg);
+			
 			System.out.println("\n=================Status=================");
 			System.out.println("Total(including PG) Composition Time: "
 					+ (refineEnd.getTime() - replanningStart.getTime()) + "ms");
 			System.out.println("Execution Length: "
 					+ (pg.getALevels().size() - 1));
-			System.out.println("Services Invoked: " + invokedServiceCount);			
+			System.out.println("Services Invoked: " + invokedServiceCount);	
+			System.out.println("Plan Distance: " + planDistance);
 			System.out.println("==================End===================");
 
 			/**
@@ -339,7 +414,10 @@ public class TestReplanningMain {
 //			}
 
 		} else {
+			Date failureTime = new Date();
 			System.out.println("\n=========Goal @NOT@ Found=========");
+			System.out.println("Failure Time: "
+					+ (failureTime.getTime() - replanningStart.getTime()) + "ms");
 		}
 		System.out.println("======================================");
 		System.out.println("===========Replanning End=============");				
