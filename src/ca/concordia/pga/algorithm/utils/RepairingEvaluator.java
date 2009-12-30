@@ -45,4 +45,20 @@ public class RepairingEvaluator {
 		
 		return score;
 	}
+	
+	public static int evaluateForward(Set<Concept> g, Set<Concept> p, Service a){
+		int score = 0;
+		Set<Concept> t = new HashSet<Concept>();
+
+		/**
+		 * calculate g join aOut
+		 */
+		t.addAll(g);
+		t.retainAll(a.getOutputConceptSet());
+		score += t.size() * 10;
+		
+		
+		return score;
+
+	}
 }

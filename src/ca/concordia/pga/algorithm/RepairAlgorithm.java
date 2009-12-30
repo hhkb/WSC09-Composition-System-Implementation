@@ -30,6 +30,15 @@ public class RepairAlgorithm {
 		}
 	};
 	
+	/**
+	 * repair given PG using backward approach
+	 * @param pg
+	 * @param serviceMap
+	 * @param conceptMap
+	 * @param thingMap
+	 * @param paramMap
+	 * @return
+	 */
 	public static boolean repair(PlanningGraph pg,
 			Map<String, Service> serviceMap, Map<String, Concept> conceptMap,
 			Map<String, Thing> thingMap, Map<String, Param> paramMap) {
@@ -225,6 +234,227 @@ public class RepairAlgorithm {
 		return true;
 	}
 	
+	
+	
+	public static boolean repairForward(PlanningGraph pg,
+			Map<String, Service> serviceMap, Map<String, Concept> conceptMap,
+			Map<String, Thing> thingMap, Map<String, Param> paramMap) {
+
+		Set<Concept> subGoalSet = new HashSet<Concept>();
+		Set<Service> candidates = new HashSet<Service>();
+		
+		/**
+		 * compute subGoalSet
+		 */
+		subGoalSet = getSubGoalSet(pg);
+		
+		int currentLevel = 1;
+		while(subGoalSet.size() != 0){
+			
+			Set<Service> aLevel = pg.getALevel(currentLevel);
+			Set<Concept> pLevel = pg.getPLevel(currentLevel);
+			List<Service> sortedCandidates = new LinkedList<Service>();
+			Set<Concept> currentSubGoalSet = new HashSet<Concept>();
+			
+			System.out.println("\ncurrent level " + currentLevel);
+			do{
+				/**
+				 * 1. compute currentSubGoalSet and subGoalSet
+				 */
+				
+				/**
+				 * compute broken preconditions in current level
+				 */
+				if(currentLevel == pg.getPLevels().size()-1){
+					/**
+					 * if last level, currentSubGoalSet only contains broken goals
+					 */
+					currentSubGoalSet.clear();
+					currentSubGoalSet.addAll(pg.getGoalSet());
+					currentSubGoalSet.removeAll(pg.getPLevel(pg.getPLevels().size()-1));
+				
+				}else{
+					
+					/**
+					 * compute currentSubGoalSet
+					 */
+					currentSubGoalSet.clear();
+					for(Service s : pg.getALevel(currentLevel+1)){
+						currentSubGoalSet.addAll(s.getInputConceptSet());
+					}
+					currentSubGoalSet.removeAll(pLevel);
+				}
+				
+				/**
+				 * skip to next level if no subgoals need to be satisfied for current level 
+				 */
+//				if(currentSubGoalSet.size() == 0){
+//					break;
+//				}
+					
+				/**
+				 * 2. Select all services that not already in current 
+				 * ALevel and could produces at least one subgoal 
+				 * in subGoalSet as candidates. 
+				 * compute their heuristic score based on heuristic function. 
+				 * Sort from highest to lowest.
+				 */
+				
+				/**
+				 * compute candidate services (services not in current ALevel)
+				 */
+				candidates.clear();
+//				for(String key : serviceMap.keySet()){
+//					candidates.add(serviceMap.get(key));
+//				}
+
+				for (Concept c : pg.getPLevel(currentLevel-1)) {
+					candidates.addAll(c.getServicesIndex());
+				}
+				candidates.removeAll(pg.getALevel(currentLevel));
+				Set<Service> removableCandidates = new HashSet<Service>();
+
+				for(Service s : candidates){
+					Set<Concept> outputs = new HashSet<Concept>();
+					outputs.addAll(s.getOutputConceptSet());
+					outputs.retainAll(subGoalSet);
+					if(outputs.size() == 0){
+						removableCandidates.add(s);
+					}else{
+						for(Concept c : outputs){
+							System.out.println(s + "satisfied " + c);
+							
+							
+						}
+					}
+				}
+				candidates.removeAll(removableCandidates);
+				System.out.println("candiates size: " + candidates.size());
+
+				/**
+				 * compute heuristic score for each of candidate service
+				 */
+				sortedCandidates.clear();
+				for(Service s : candidates){
+					int score = RepairingEvaluator.evaluateForward(subGoalSet, pg.getPLevel(currentLevel), s);
+//					int score = RepairingEvaluator.evaluate(currentSubGoalSet, pg.getPLevel(currentLevel-1), s);
+					s.setScore(score);
+					sortedCandidates.add(s);
+				}
+				Collections.sort(sortedCandidates, serviceScoreComparator);
+				
+				/**
+				 * 3. Insert first service in candidate list to current ALevel. 
+				 * Add its outputs to PLevel(n). 
+				 * Check if PLevel(n) still has unstatisfied subgoals. 
+				 * if yes, repeat step 1 unless candidates list become empty 
+				 * then return unrepairable.
+				 */
+
+				if(sortedCandidates.size() == 0 & currentSubGoalSet.size() > 0){
+					return false;
+				}else if(sortedCandidates.size() == 0 & currentSubGoalSet.size() == 0){
+					System.out.println("skip current level");
+					break;
+				}
+				
+
+				Service candidate = sortedCandidates.get(0);
+				sortedCandidates.remove(0);
+				aLevel.add(candidate);
+				addCandidateOuputs(pg,currentLevel,candidate);
+//				pLevel.addAll(candidate.getOutputConceptSet());
+//				pg.getPLevel(currentLevel-1).addAll(candidate.getInputConceptSet());
+				System.out.println("CurrentSubGoalSet size: " + currentSubGoalSet.size());
+				System.out.println("SubGoalSet size(before): " + subGoalSet.size());
+				subGoalSet = getSubGoalSet(pg);
+				
+				currentSubGoalSet.removeAll(pg.getPLevel(currentLevel));
+				
+				System.out.println("Added: " + candidate + "(" + candidate.getScore() + ")" + " at: " + currentLevel);
+				System.out.println("SubGoalSet size(after): " + subGoalSet.size());
+
+//				System.out.println("CurrentSubGoalSet size: " + currentSubGoalSet.size());
+				
+				
+
+			}while(true);
+			
+			/**
+			 * if currentSubGoalSet cannot be satisfied, return unrepairable
+			 */
+			if(currentSubGoalSet.size() != 0){
+				return false;
+			}
+			
+			/**
+			 * 4. compute subGoalSet which contains all broken preconditions 
+			 * and unsatisfied goals based on current PG status, if empty return PG
+			 */
+			
+			/**
+			 * compute subGoalSet based on current PG status
+			 */
+			subGoalSet = getSubGoalSet(pg);
+			if(subGoalSet.size() == 0){
+				return true;
+			}
+			
+			System.out.println("subGoalSet size: " + subGoalSet.size());
+			/**
+			 * 5. increase level count by 1
+			 */
+			currentLevel++;
+			
+			/**
+			 * 6. if level = size-1, append a new PLevel which is contains all concepts in last PLevel to the PG.
+			 */
+			if(currentLevel == pg.getALevels().size()-1){
+				Set<Concept> newPLevel = new HashSet<Concept>();
+				newPLevel.addAll(pg.getPLevel(currentLevel));
+				pg.getPLevels().add(newPLevel);
+				pg.getALevels().add(new HashSet<Service>());
+			}
+			
+			
+		}
+		
+		/**
+		 * Upon success:
+		 * Start from level 1
+		 * while level < levels.size()
+		 * 1. select each service in current ALevel, removed all its duplicate in higher ALevel.
+		 * 2. increse level count by 1
+		 */
+		
+		currentLevel = 1;
+		while(currentLevel < pg.getALevels().size()){
+			for(Service s : pg.getALevel(currentLevel)){
+				int higherLevel = currentLevel + 1;
+				while(higherLevel < pg.getALevels().size()){
+					Set<Service> duplicates = new HashSet<Service>();
+					for(Service hs : pg.getALevel(higherLevel)){
+						if(s.equals(hs)){
+							duplicates.add(hs);
+						}
+					}
+					if(pg.getALevel(higherLevel).removeAll(duplicates)){
+						System.out.println("duplicates removed!");
+					}
+					higherLevel++;
+				}
+			}
+			currentLevel++;
+		}
+		return true;
+	}
+	
+	private static void addCandidateOuputs(PlanningGraph pg, int currentLevel, Service candidate){
+		while(currentLevel < pg.getALevels().size()){
+			pg.getPLevel(currentLevel).addAll(candidate.getOutputConceptSet());
+			currentLevel++;
+		}
+	}
 	
 	/**
 	 * get subGoalSet which contains bp and unsatisfied goals base on given PG status
