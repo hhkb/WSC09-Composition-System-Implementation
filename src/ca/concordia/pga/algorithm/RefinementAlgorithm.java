@@ -141,6 +141,7 @@ public class RefinementAlgorithm {
 			 */
 			Set<Service> actionSet = pg.getALevel(currLevel);
 			subGoalSet.addAll(leftGoalSet);
+			subGoalSet.removeAll(pg.getGivenConceptSet());
 			leftGoalSet.clear();
 			for (Concept g : subGoalSet) {
 				for (Service s : actionSet) {
@@ -224,7 +225,33 @@ public class RefinementAlgorithm {
 		if (leftGoalSet.size() != 0) {
 			System.out.println("Solution is NOT VALID!");
 		}
+		
+//		removeEmptyLevels(pg);
+		
 		return routeCounters; // temperate for debug, will be removed!
+	}
+	
+	/**
+	 * remove empty levels from given pg
+	 * @param pg
+	 */
+	private static void removeEmptyLevels(PlanningGraph pg){
+	
+		/**
+		 * remove empty levels
+		 */
+		int currentLevel = 1;			
+		while(currentLevel < pg.getALevels().size()){
+			if(pg.getALevel(currentLevel).size()==0){
+				pg.removedLevel(currentLevel);
+			}else{
+				currentLevel++;
+			}
+		}
+		
+
+		
+		
 	}
 
 }

@@ -108,5 +108,10 @@ public class PlanningGraph {
 		
 		return pg;
 	}
+	
+	public void removedLevel(int level){
+		this.ALevels.remove(level);
+		this.PLevels.remove(level);
+	}
 
 }
