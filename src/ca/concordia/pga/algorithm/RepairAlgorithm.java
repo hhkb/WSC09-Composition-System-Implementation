@@ -32,16 +32,7 @@ public class RepairAlgorithm {
 		}
 	};
 
-	/**
-	 * repair given PG using backward approach
-	 * 
-	 * @param pg
-	 * @param serviceMap
-	 * @param conceptMap
-	 * @param thingMap
-	 * @param paramMap
-	 * @return
-	 */
+
 	public static boolean repairRevised(PlanningGraph pg,
 			Map<String, Service> serviceMap, Map<String, Concept> conceptMap,
 			Map<String, Thing> thingMap, Map<String, Param> paramMap) {
@@ -499,6 +490,16 @@ public class RepairAlgorithm {
 		return true;
 	}
 
+	/**
+	 * repair given PG using backward approach
+	 * 
+	 * @param pg
+	 * @param serviceMap
+	 * @param conceptMap
+	 * @param thingMap
+	 * @param paramMap
+	 * @return
+	 */
 	public static boolean repair(PlanningGraph pg,
 			Map<String, Service> serviceMap, Map<String, Concept> conceptMap,
 			Map<String, Thing> thingMap, Map<String, Param> paramMap) {
