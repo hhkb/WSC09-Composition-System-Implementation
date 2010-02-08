@@ -13,19 +13,20 @@ import org.dom4j.DocumentException;
 
 import ca.concordia.pga.algorithm.PGAlgorithm;
 import ca.concordia.pga.algorithm.RefinementAlgorithm;
+import ca.concordia.pga.algorithm.RepairAlgorithm;
 import ca.concordia.pga.algorithm.utils.DocumentParser;
 import ca.concordia.pga.algorithm.utils.IndexBuilder;
 import ca.concordia.pga.algorithm.utils.PGValidator;
+import ca.concordia.pga.algorithm.utils.PlanStabilityEvaluator;
 import ca.concordia.pga.models.Concept;
 import ca.concordia.pga.models.Param;
 import ca.concordia.pga.models.PlanningGraph;
 import ca.concordia.pga.models.Service;
 import ca.concordia.pga.models.Thing;
 
-public class ICWSRepairingMain {
+public class ICWSRepairingOption2Main {
 	
 	// change the Prefix URL according your environment
-	//static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset01/";
 	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
@@ -51,14 +52,8 @@ public class ICWSRepairingMain {
 				commonOutputs.addAll(leanSolutionPG.getGoalSet());
 				for(Service s : leanSolutionPG.getALevel(currentLevel)){
 
-					if(s.equals("serv1197250503")){
-						System.out.println();
-					}
 					s.getCommonOutputs().addAll(s.getOutputConceptSet());
 					s.getCommonOutputs().retainAll(commonOutputs);
-					if(s.equals("serv1197250503")){
-						System.out.println();
-					}
 				}
 			}
 			
@@ -95,9 +90,6 @@ public class ICWSRepairingMain {
 				Set<Concept> outputs = new HashSet<Concept>();
 				outputs.addAll(s.getOutputConceptSet());
 				outputs.retainAll(candidate.getOutputConceptSet());
-				if(s.equals("serv1197250503") & candidate.equals("serv1889934289")){
-					System.out.println();
-				}
 				if(s.getInputConceptSet().equals(candidate.getInputConceptSet())
 					& candidate.getOutputConceptSet().containsAll(s.getCommonOutputs())
 					& !s.equals(candidate)){
@@ -182,26 +174,22 @@ public class ICWSRepairingMain {
 		/**
 		 * PG Algorithm Implementation
 		 */
-		boolean goalFound = false;
 		
 		serviceMapReserved.putAll(serviceMap);
 		
-		do {
-			
-			Set<Service> invokedServiceSet = new HashSet<Service>();
-			Set<Service> currInvokableServiceSet = new HashSet<Service>();
-			Set<Service> currNonInvokableServiceSet = new HashSet<Service>();
-			Set<Concept> knownConceptSet = new HashSet<Concept>(); 
-			
-			Date compStart = new Date(); // start composition checkpoint
-			goalFound = PGAlgorithm.generatePG(knownConceptSet,
-					currInvokableServiceSet, currNonInvokableServiceSet,
-					invokedServiceSet, pg);
-			Date compEnd = new Date(); // end composition checkpoint
+		Set<Service> invokedServiceSet = new HashSet<Service>();
+		Set<Service> currInvokableServiceSet = new HashSet<Service>();
+		Set<Service> currNonInvokableServiceSet = new HashSet<Service>();
+		Set<Concept> knownConceptSet = new HashSet<Concept>(); 
+		
+		Date compStart = new Date(); // start composition checkpoint
+		boolean goalFound = PGAlgorithm.generatePG(knownConceptSet,
+				currInvokableServiceSet, currNonInvokableServiceSet,
+				invokedServiceSet, pg);
+		Date compEnd = new Date(); // end composition checkpoint
+		
+		if(goalFound) {
 
-			if(!goalFound){
-				break;
-			}
 			/**
 			 * printout PG status (before pruning)
 			 */
@@ -219,7 +207,6 @@ public class ICWSRepairingMain {
 			 */
 			PGValidator.comboValidate(pg, serviceMap, conceptMap, thingMap, paramMap, givenConceptSet);
 			
-
 			/**
 			 * reserve full PG status
 			 */
@@ -229,6 +216,7 @@ public class ICWSRepairingMain {
 			 * prune PG
 			 */
 			Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
+			
 			/**
 			 * printout backward search status
 			 */
@@ -276,49 +264,7 @@ public class ICWSRepairingMain {
 			calculateCommonOutputs(leanSolutionPG);
 			calculateBackups(leanSolutionPG.getAllServices(),fullPG);
 			
-			
-			/**
-			 * get a list of removed services
-			 */
-			Set<Service> removedServices = leanSolutionPG.getAllServicesAndTheirBackups();
-			
-			int oldServiceMapSize = serviceMap.size();
-			for(Service s : removedServices){
-				serviceMap.remove(s.toString());
-			}
-			System.out.println("services remvoed from map: " + (oldServiceMapSize-serviceMap.size()));
-			
-
-			/**
-			 * reset inverted index
-			 */
-			for(String key : conceptMap.keySet()){
-				Concept concept = conceptMap.get(key);
-				concept.resetServiceIndex();
-			}
-			IndexBuilder.buildInvertedIndex(conceptMap, serviceMap);
-			
-			/**
-			 * reset PG
-			 */
-			pg = new PlanningGraph();
-			pg.addPLevel(new HashSet<Concept>());
-			pg.getPLevel(0).addAll(fullPG.getGivenConceptSet());
-			pg.addALevel(new HashSet<Service>());
-			pg.getGoalSet().addAll(fullPG.getGoalSet());
-			pg.getGivenConceptSet().addAll(fullPG.getGivenConceptSet());
-			
-			System.out.println();
-			System.out.println("Given Concepts: ");
-			for (Concept c : pg.getPLevel(0)) {
-				System.out.print(c + " | ");
-			}
-			System.out.println();
-			System.out.println("Goal Concepts: ");
-			for (Concept c : pg.getGoalSet()) {
-				System.out.print(c + " | ");
-			}
-			System.out.println();
+			pg = fullPG;
 
 			/**
 			 * if all backup services in any removed services' backup list are removed, 
@@ -326,7 +272,7 @@ public class ICWSRepairingMain {
 			 * to removed services list 
 			 */
 			
-		}while (goalFound);
+		}
 		
 		serviceMap = serviceMapReserved;
 		
@@ -342,10 +288,10 @@ public class ICWSRepairingMain {
 		Set<Service> removedServices = new HashSet<Service>();
 		removedServices.add(serviceMap.get("serv157405514"));//break solution 1
 		removedServices.add(serviceMap.get("serv1612205357"));
-		removedServices.add(serviceMap.get("serv2103146582"));//break solution 2
-		removedServices.add(serviceMap.get("serv1197250503"));//break solution 3
-		removedServices.add(serviceMap.get("serv1889934289"));
-		removedServices.add(serviceMap.get("serv1762539517"));//break solution 4
+//		removedServices.add(serviceMap.get("serv2103146582"));//break solution 2
+//		removedServices.add(serviceMap.get("serv1197250503"));//break solution 3
+//		removedServices.add(serviceMap.get("serv1889934289"));
+//		removedServices.add(serviceMap.get("serv1762539517"));//break solution 4
 
 		
 		System.out.println("=================================");
@@ -365,6 +311,11 @@ public class ICWSRepairingMain {
 			concept.resetServiceIndex();
 		}
 		IndexBuilder.buildInvertedIndex(conceptMap, serviceMap);
+		
+		/**
+		 * preserve all service as well as their backups in the lean solution 
+		 */
+		Set<Service> leanSolutionServices = leanSolutions.get(0).getAllServicesAndTheirBackups();
 		
 		/**
 		 * checking if solution break
@@ -425,9 +376,142 @@ public class ICWSRepairingMain {
 			System.out.println("Services Invoked: " + fixedPG.getAllServices().size());
 			System.out.println("=============================");
 		}else{
-			System.out.println("Plan not fixable");
-			System.out.println("PG Repairing Time: "
-					+ (fixEnd.getTime() - fixStart.getTime()) + "ms");
+			System.out.println("No backup found, going to repairing mode!");
+			
+			PlanningGraph oldpg = leanSolutions.get(0).clone();
+
+			leanSolutionServices.addAll(removedServices);
+			pg.removeServices(leanSolutionServices);
+			for(Service s : leanSolutionServices){
+				serviceMap.remove(s.toString());
+				System.out.println(s + " removed!");
+			}
+			/**
+			 * reset inverted index
+			 */
+			for(String key : conceptMap.keySet()){
+				Concept concept = conceptMap.get(key);
+				concept.resetServiceIndex();
+			}
+			IndexBuilder.buildInvertedIndex(conceptMap, serviceMap);
+			
+			/**
+			 * validate PG
+			 */
+			PGValidator.comboValidate(pg, serviceMap, conceptMap, thingMap, paramMap, givenConceptSet);
+			
+			Date repairStart = new Date();
+			
+//			if(RepairAlgorithm.repair(pg, serviceMap, conceptMap, thingMap, paramMap)){
+			if(RepairAlgorithm.repairRevised(pg, serviceMap, conceptMap, thingMap, paramMap)){
+				System.out.println("Repair Succeed!");
+
+				System.out.println();
+				System.out.println("===================================");
+				System.out.println("===========Repair Result===========");
+				System.out.println("=========(Before Refinement)=======");					
+				System.out.println("===================================");
+				int invokedServiceCount = 0;
+				for (int i = 1; i < pg.getALevels().size(); i++) {
+					System.out.println("\n*********Action Level " + i);
+					for (Service s : pg.getALevel(i)) {
+						System.out.println(s);
+						invokedServiceCount++;
+					}
+				}
+				Date repairEnd = new Date(); // refine end checkpoint
+				System.out.println("\n=================Status=================");
+				System.out.println("Repair Time: "
+						+ (repairEnd.getTime() - repairStart.getTime()) + "ms");
+				System.out.println("Execution Length: "
+						+ (pg.getALevels().size() - 1));
+				System.out.println("Services Invoked: " + invokedServiceCount);
+				System.out.println("==================End===================");	
+
+				/**
+				 * do backward search to remove redundancy (pruning PG)
+				 */
+				for(String key : conceptMap.keySet()){
+					Concept concept = conceptMap.get(key);
+					concept.getOriginServiceSet().clear();
+				}
+				Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
+				Date refineEnd = new Date(); // refine end checkpoint
+
+				
+				/**
+				 * printout backward search status
+				 */
+				System.out.println();
+				System.out.println("===================================");
+				System.out.println("===========Repair Result===========");
+				System.out.println("=========(After Refinement)========");					
+				System.out.println("===================================");
+
+				invokedServiceCount = 0;
+				for (int i = 1; i < pg.getALevels().size(); i++) {
+					System.out.println("\n*********Action Level " + i
+							+ " (alternative routes:"
+							+ routesCounters.get(routesCounters.size() - i)
+							+ ") *******");
+					for (Service s : pg.getALevel(i)) {
+						System.out.println(s);
+						invokedServiceCount++;
+					}
+				}
+				
+				/**
+				 * compute plan distance
+				 */
+				int planDistance;
+				planDistance = PlanStabilityEvaluator.evaluate(oldpg, pg);
+				
+				System.out.println("\n=================Status=================");
+				System.out.println("Total(Repair + Refinement) Composition Time: "
+						+ (refineEnd.getTime() - repairStart.getTime()) + "ms");
+				System.out.println("Execution Length: "
+						+ (pg.getALevels().size() - 1));
+				System.out.println("Services Invoked: " + invokedServiceCount);
+				System.out.println("Plan Distance: " + planDistance);					
+				System.out.println("==================End===================");	
+				
+				PGValidator.comboValidate(pg, serviceMap, conceptMap, thingMap, paramMap, givenConceptSet);
+				
+//				System.out.println("con1654192824 's children:");
+//				for(Concept c : conceptMap.get("con1654192824").getChildrenConceptsIndex()){
+//					System.out.println(c);
+//				}
+//				System.out.println("------------------------------------------");
+//				
+//				System.out.println("con1350247492 's children:");
+//				for(Concept c : conceptMap.get("con1350247492").getChildrenConceptsIndex()){
+//					System.out.println(c);
+//				}
+//				System.out.println("------------------------------------------");
+//				
+//				System.out.println("con1074157104 's parents:");
+//				for(Concept c : conceptMap.get("con1074157104").getParentConceptsIndex()){
+//					System.out.println(c);
+//				}
+//				System.out.println("------------------------------------------");
+//				
+//				System.out.println("con729044623 's parents:");
+//				for(Concept c : conceptMap.get("con729044623").getParentConceptsIndex()){
+//					System.out.println(c);
+//				}
+//				System.out.println("------------------------------------------");
+//				
+//				System.out.println("con772260456 's parents:");
+//				for(Concept c : conceptMap.get("con772260456").getParentConceptsIndex()){
+//					System.out.println(c);
+//				}
+//				System.out.println("------------------------------------------");
+			}else{
+				Date repairFailed = new Date();
+				System.out.println("Repair Failed!");
+				System.out.println("Repair Failed Time: "
+						+ (repairFailed.getTime() - repairStart.getTime()) + "ms");					
+			}
 		}
 		
 		

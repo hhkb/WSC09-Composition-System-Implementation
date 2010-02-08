@@ -36,7 +36,7 @@ public class TestParsingMain {
 
 	// change the Prefix URL according your environment
 //	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset04/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset12/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
 	// static final String WSLA_URL = PREFIX_URL +
@@ -857,6 +857,11 @@ public class TestParsingMain {
 				System.out.println("\nGoalConcepts is VALID!");
 			}else{
 				System.out.println("\nGoalConcepts is NOT VALID!");
+			}
+			
+			Service s1 = serviceMap.get("serv1889934289");
+			if(s1.getOutputConceptSet().contains("con2016714916")){
+				System.out.println("contains con2016714916");
 			}
 		} else {
 			System.out.println("\n=========Goal @NOT@ Found=========");

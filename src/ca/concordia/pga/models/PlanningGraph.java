@@ -177,4 +177,25 @@ public class PlanningGraph {
 		
 		return false;
 	}
+	
+	/**
+	 * removed given services from PG
+	 * @param removedServices
+	 */
+	public void removeServices(Set<Service> removedServices){
+		for(Set<Service> aLevel : this.getALevels()){
+			aLevel.removeAll(removedServices);
+		}
+		this.regeneratePLevels();
+	}
+	
+	
+	public Set<Service> getAllServciesAtHigerLevel(int currentLevel){
+		Set<Service> services = new HashSet<Service>();
+		while(currentLevel < this.getALevels().size()){
+			services.addAll(this.getALevel(currentLevel));
+			currentLevel++;
+		}
+		return services;
+	}
 }
