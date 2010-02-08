@@ -181,11 +181,11 @@ public class TestReplanningMain {
 			/**
 			 * generate solution file
 			 */
-			try {
-				SolutionGenerator.generateSolution(pg);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				SolutionGenerator.generateSolution(pg);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
 
 		} else {
 			System.out.println("\n=========Goal @NOT@ Found=========");

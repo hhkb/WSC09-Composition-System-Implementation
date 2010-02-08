@@ -38,7 +38,7 @@ public class RepairAlgorithm {
 			Map<String, Thing> thingMap, Map<String, Param> paramMap) {
 
 		Set<Concept> subGoalSet = new HashSet<Concept>();
-		Set<Service> candidates = new HashSet<Service>();
+//		Set<Service> candidates = new HashSet<Service>();
 		
 		/**
 		 * remove empty levels

@@ -13,18 +13,25 @@ public class Service extends UniNameObject {
 	private Set<Param> outputParamSet;
 	private Set<Concept> inputConceptSet;
 	private Set<Concept> outputConceptSet;
+	private Set<Concept> commonOutputs;
 	private Set<Service> equivalentServiceSet;
+	private Set<Service> backupServiceSet;
 	private int responseTime;
 	private int throughput;
 	private Integer score;
-
+	private boolean solutionService;
+	
 	public Service(String name) {
 		super(name);
 		inputParamSet = new HashSet<Param>();
 		outputParamSet = new HashSet<Param>();
 		inputConceptSet = new HashSet<Concept>();
 		outputConceptSet = new HashSet<Concept>();
+		commonOutputs = new HashSet<Concept>();
+		equivalentServiceSet = new HashSet<Service>();
+		backupServiceSet = new HashSet<Service>();
 		score = 0;
+		solutionService = false;
 	}
 	
 	public int compareTo(Service s) {
@@ -96,6 +103,30 @@ public class Service extends UniNameObject {
 
 	public void setScore(Integer score) {
 		this.score = score;
+	}
+
+	public boolean isSolutionService() {
+		return solutionService;
+	}
+
+	public void setSolutionService(boolean solutionService) {
+		this.solutionService = solutionService;
+	}
+
+	public Set<Service> getBackupServiceSet() {
+		return backupServiceSet;
+	}
+
+	public void setBackupServiceSet(Set<Service> backupServiceSet) {
+		this.backupServiceSet = backupServiceSet;
+	}
+
+	public Set<Concept> getCommonOutputs() {
+		return commonOutputs;
+	}
+
+	public void setCommonOutputs(Set<Concept> commonOutputs) {
+		this.commonOutputs = commonOutputs;
 	}
 
 	

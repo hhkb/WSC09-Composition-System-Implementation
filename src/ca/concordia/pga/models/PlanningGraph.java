@@ -113,5 +113,68 @@ public class PlanningGraph {
 		this.ALevels.remove(level);
 		this.PLevels.remove(level);
 	}
+	
+	/**
+	 * 
+	 * @return all services in the PG
+	 */
+	public Set<Service> getAllServices(){
+		Set<Service> services = new HashSet<Service>();
+		for(Set<Service> aLevel : this.getALevels()){
+			services.addAll(aLevel);
+		}
+		return services;
+	}
 
+	/**
+	 * 
+	 * @return all services in the PG as well as their backups
+	 */
+	public Set<Service> getAllServicesAndTheirBackups(){
+		Set<Service> services = new HashSet<Service>();
+		for(Set<Service> aLevel : this.getALevels()){
+			services.addAll(aLevel);
+			for(Service s : aLevel){
+				services.addAll(s.getBackupServiceSet());
+			}
+		}
+		return services;	
+		
+	}
+	
+	/**
+	 * regenerate all pLevel according to current action level status
+	 */
+	public void regeneratePLevels(){
+		Set<Concept> knownConcepts = new HashSet<Concept>();
+		knownConcepts.addAll(this.getPLevel(0));
+		
+		for(int i=1; i < this.getALevels().size(); i++){
+			for(Service s : this.getALevel(i)){
+				knownConcepts.addAll(s.getOutputConceptSet());
+			}
+			this.getPLevel(i).clear();
+			this.getPLevel(i).addAll(knownConcepts);
+		}
+	}
+	
+	/**
+	 * replace PG service by given service
+	 * @param original
+	 * @param replacement
+	 * @return true if replaced, otherwise false
+	 */
+	public boolean replaceService(Service original, Service replacement){
+		
+		for(Set<Service> aLevel : this.getALevels()){
+			if(aLevel.contains(original)){
+				aLevel.add(replacement);
+				aLevel.remove(original);
+				this.regeneratePLevels();
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

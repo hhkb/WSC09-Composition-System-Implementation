@@ -28,7 +28,7 @@ public class UniNameObject extends Object implements Comparable<UniNameObject>{
 			UniNameObject n = (UniNameObject) o;
 			return this.name.equals(n.getName());
 		} else {
-			return this.equals(o);
+			return this.toString().equals(o);
 		}
 	}
 
