@@ -847,15 +847,7 @@ public class TestParsingMain {
 //			}
 //			System.out.println("Checker: checking the BPEL Solution...");			
 //
-//			
-//			/**
-//			 * official checker
-//			 */
-//			SolutionChecker checker = new SolutionChecker();
-//			checker.check(PREFIX_URL);
-//			
-//			System.out.println("Validator: validating planning graph...");		
-			
+
 			/**
 			 * validate PG
 			 */
