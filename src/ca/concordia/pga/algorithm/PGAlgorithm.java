@@ -7,6 +7,11 @@ import ca.concordia.pga.models.Concept;
 import ca.concordia.pga.models.PlanningGraph;
 import ca.concordia.pga.models.Service;
 
+/**
+ * Planning Algorithm for Composing a Planning Graph
+ * @author Ludeng Zhao(Eric)
+ *
+ */
 public class PGAlgorithm {
 
 	public static boolean generatePG(Set<Concept> knownConceptSet,
@@ -43,11 +48,14 @@ public class PGAlgorithm {
 				}
 			}
 			currInvokableServiceSet.removeAll(currNonInvokableServiceSet);
+			/**
+			 * if there is no invokable services, return false
+			 */
 			if (currInvokableServiceSet.size() <= 0) {
 				break;
 			}
 			/**
-			 * invoke the services
+			 * generate ALevel
 			 */
 			invokedServiceSet.addAll(currInvokableServiceSet);
 			pg.addALevel(currInvokableServiceSet);
@@ -60,9 +68,13 @@ public class PGAlgorithm {
 			pLevel.addAll(knownConceptSet);
 			pg.addPLevel(pLevel);
 			/**
-			 * increase the level and print out newly invoked services
+			 * increase the level 
 			 */
 			currentLevel++;
+			
+			/**
+			 * print out newly added services
+			 */
 			System.out.println("\n*********Action Level " + currentLevel
 					+ " *******");
 			for (Service s : pg.getALevel(currentLevel)) {

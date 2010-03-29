@@ -22,7 +22,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import ca.concordia.pga.algorithm.PGAlgorithm;
-import ca.concordia.pga.algorithm.RefinementAlgorithm;
+import ca.concordia.pga.algorithm.BackwardSearchAlgorithm;
 import ca.concordia.pga.algorithm.utils.CombinationHelper;
 import ca.concordia.pga.algorithm.utils.DocumentParser;
 import ca.concordia.pga.algorithm.utils.IndexBuilder;
@@ -41,13 +41,15 @@ public class TestReplanningMain {
 
 	// change the Prefix URL according your environment
 //	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset01/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset12/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
 	// static final String WSLA_URL = PREFIX_URL +
 	// "Servicelevelagreements.wsla";
 	static final String CHALLENGE_URL = PREFIX_URL + "Challenge.wsdl";
 
+	public static Set<Service> commonRemovedServices = new HashSet<Service>();
+	public static Set<Service> takeOutServices = new HashSet<Service>();
 
 	/**
 	 * @param args
@@ -81,6 +83,15 @@ public class TestReplanningMain {
 			e.printStackTrace();
 		}
 
+		
+		/**
+		 * take out solution 1
+		 */
+		for(Service s : takeOutServices){
+			serviceMap.remove(s.toString());
+		}
+		
+		
 		IndexBuilder.buildInvertedIndex(conceptMap, serviceMap);
 		Date initEnd = new Date();
 
@@ -149,7 +160,7 @@ public class TestReplanningMain {
 			/**
 			 * do backward search to remove redundancy (pruning PG)
 			 */
-			Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
+			Vector<Integer> routesCounters = BackwardSearchAlgorithm.extractSolution(pg);
 			Date refineEnd = new Date(); //refinement end checkpoint
 			
 			/**
@@ -231,16 +242,16 @@ public class TestReplanningMain {
 //		serviceMap.remove("serv1056747493");
 
 		Set<Service> candidates = new HashSet<Service>();
-//		candidates.add(serviceMap.get("serv1056747493"));
-//		candidates.add(serviceMap.get("serv1126179726"));
-//		candidates.add(serviceMap.get("serv1195611959"));
-//		candidates.add(serviceMap.get("serv502928173"));
-//		candidates.add(serviceMap.get("serv2096592482"));
-//		candidates.add(serviceMap.get("serv18541048"));
-//		candidates.add(serviceMap.get("serv87973281"));
-//		candidates.add(serviceMap.get("serv850089338"));
-//		candidates.add(serviceMap.get("serv1612205357"));
-//		candidates.add(serviceMap.get("serv919521571"));
+		candidates.add(serviceMap.get("serv1056747493"));
+		candidates.add(serviceMap.get("serv1126179726"));
+		candidates.add(serviceMap.get("serv1195611959"));
+		candidates.add(serviceMap.get("serv502928173"));
+		candidates.add(serviceMap.get("serv2096592482"));
+		candidates.add(serviceMap.get("serv18541048"));
+		candidates.add(serviceMap.get("serv87973281"));
+		candidates.add(serviceMap.get("serv850089338"));
+		candidates.add(serviceMap.get("serv1612205357"));
+		candidates.add(serviceMap.get("serv919521571"));
 		
 		
 //		candidates.add(serviceMap.get("serv1222560119"));//cause failed
@@ -279,12 +290,18 @@ public class TestReplanningMain {
 //				}		
 //			}
 //		}while(removedServiceKeySet.size() < 2);
-
-
-		for(String key : removedServiceKeySet){
-			removedServiceSet.add(serviceMap.get(key));
-			serviceMap.remove(key);
+//
+//
+//		for(String key : removedServiceKeySet){
+//			removedServiceSet.add(serviceMap.get(key));
+//			serviceMap.remove(key);
+//		}
+		
+		for(Service s : commonRemovedServices){
+			removedServiceSet.add(s);
+			serviceMap.remove(s.toString());
 		}
+		
 		changedServiceMapSize = serviceMap.size();
 		changedRate = (float)(originalServiceMapSize-changedServiceMapSize)/(float)originalServiceMapSize*100;
 		System.out.println();
@@ -367,7 +384,7 @@ public class TestReplanningMain {
 			/**
 			 * do backward search to remove redundancy (pruning PG)
 			 */
-			Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
+			Vector<Integer> routesCounters = BackwardSearchAlgorithm.extractSolution(pg);
 			Date refineEnd = new Date(); //refinement end checkpoint
 			
 			/**

@@ -15,7 +15,7 @@ import java.util.Vector;
 import org.dom4j.DocumentException;
 
 import ca.concordia.pga.algorithm.PGAlgorithm;
-import ca.concordia.pga.algorithm.RefinementAlgorithm;
+import ca.concordia.pga.algorithm.BackwardSearchAlgorithm;
 import ca.concordia.pga.algorithm.RemovalAlgorithm;
 import ca.concordia.pga.algorithm.RepairAlgorithm;
 import ca.concordia.pga.algorithm.utils.DocumentParser;
@@ -31,16 +31,16 @@ import ca.concordia.pga.models.*;
  * @author Ludeng Zhao(Eric)
  * 
  */
-public class RepairingExperiment3 {
+public class TestICWSRepairingAlgorithmMain {
 
 	// change the Prefix URL according your environment
-	//static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset07/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset12/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
-	// static final String WSLA_URL = PREFIX_URL +
-	// "Servicelevelagreements.wsla";
+	// static final String WSLA_URL = PREFIX_URL + "Servicelevelagreements.wsla";
 	static final String CHALLENGE_URL = PREFIX_URL + "Challenge.wsdl";
+	public static Set<Service> commonRemovedServices = new HashSet<Service>();
+	public static Set<Service> takeOutServices = new HashSet<Service>();
 
 	/**
 	 * @param args
@@ -73,6 +73,13 @@ public class RepairingExperiment3 {
 			e.printStackTrace();
 		}
 
+		/**
+		 * take out the given solution
+		 */
+		for(Service s : takeOutServices){
+			serviceMap.remove(s.toString());
+		}
+		
 		IndexBuilder.buildInvertedIndex(conceptMap, serviceMap);
 		Date initEnd = new Date();
 
@@ -109,6 +116,9 @@ public class RepairingExperiment3 {
 		}
 		System.out.println();
 
+		
+
+		
 		/**
 		 * PG Algorithm Implementation
 		 */
@@ -143,6 +153,15 @@ public class RepairingExperiment3 {
 			PGValidator.comboValidate(pg, serviceMap, conceptMap, thingMap, paramMap, givenConceptSet);
 			
 
+			/**
+			 * prune PG
+			 */
+			BackwardSearchAlgorithm.extractSolution(pg);
+
+			/**
+			 * reserve old PG status
+			 */
+			PlanningGraph oldpg = pg.clone();
 			
 			/**
 			 * remove services from serviceMap
@@ -154,7 +173,7 @@ public class RepairingExperiment3 {
 			Set<String> removedServiceKeySet = new HashSet<String>();
 			Set<Service> removedServiceSet = new HashSet<Service>();
 //			for (String key : serviceMap.keySet()) {
-//				if (Math.random() <= 0.05) {
+//				if (Math.random() <= 0.24) {
 //					removedServiceKeySet.add(key);
 //				}
 //			}
@@ -165,16 +184,16 @@ public class RepairingExperiment3 {
 			/**
 			 * testset01
 			 */
-//			candidates.add(serviceMap.get("serv1056747493"));
-//			candidates.add(serviceMap.get("serv1126179726"));
-//			candidates.add(serviceMap.get("serv1195611959"));
-//			candidates.add(serviceMap.get("serv502928173"));
-//			candidates.add(serviceMap.get("serv2096592482"));
-//			candidates.add(serviceMap.get("serv18541048"));
-//			candidates.add(serviceMap.get("serv87973281"));
-//			candidates.add(serviceMap.get("serv850089338"));
-//			candidates.add(serviceMap.get("serv1612205357"));
-//			candidates.add(serviceMap.get("serv919521571"));
+			candidates.add(serviceMap.get("serv1056747493"));
+			candidates.add(serviceMap.get("serv1126179726"));
+			candidates.add(serviceMap.get("serv1195611959"));//cause failed
+			candidates.add(serviceMap.get("serv502928173"));
+			candidates.add(serviceMap.get("serv2096592482"));//cause failed
+			candidates.add(serviceMap.get("serv18541048"));
+			candidates.add(serviceMap.get("serv87973281"));
+			candidates.add(serviceMap.get("serv850089338"));//cause failed
+			candidates.add(serviceMap.get("serv1612205357"));
+			candidates.add(serviceMap.get("serv919521571"));
 			
 			/**
 			 * testset02
@@ -199,37 +218,42 @@ public class RepairingExperiment3 {
 //			candidates.add(serviceMap.get("serv1939094802"));//cause failure
 //			candidates.add(serviceMap.get("serv208204533"));//cause failure
 //			candidates.add(serviceMap.get("serv1663004376"));//cause failure
-			candidates.add(serviceMap.get("serv1593572143"));
-			candidates.add(serviceMap.get("serv1524139910"));
-			candidates.add(serviceMap.get("serv2008527035"));
-			candidates.add(serviceMap.get("serv1385275444"));
-			candidates.add(serviceMap.get("serv1732436609"));
-			candidates.add(serviceMap.get("serv1248049522"));
-			candidates.add(serviceMap.get("serv1317481755"));
+//			candidates.add(serviceMap.get("serv1593572143"));
+//			candidates.add(serviceMap.get("serv1524139910"));
+//			candidates.add(serviceMap.get("serv2008527035"));
+//			candidates.add(serviceMap.get("serv1385275444"));
+//			candidates.add(serviceMap.get("serv1732436609"));
+//			candidates.add(serviceMap.get("serv1248049522"));
+//			candidates.add(serviceMap.get("serv1317481755"));
 			
 //			candidates.add(serviceMap.get("serv763260701"));
 //			candidates.add(serviceMap.get("serv1872537885"));
 //			candidates.add(serviceMap.get("serv891828653"));
 //			candidates.add(serviceMap.get("serv1584512439"));
 //			candidates.add(serviceMap.get("serv1653944672"));
-			do{
-				for(Service s : candidates){
-					if (Math.random() <= 0.10) {
-						removedServiceKeySet.add(s.getName());
-						break;
-					}		
-				}
-			}while(removedServiceKeySet.size() < 3);
-
-
-
-			for (String key : removedServiceKeySet) {
-				removedServiceSet.add(serviceMap.get(key));
-				serviceMap.remove(key);
+			
+//			do{
+//				for(Service s : candidates){
+//					if (Math.random() <= 0.10) {
+//						removedServiceKeySet.add(s.getName());
+//						break;
+//					}		
+//				}
+//			}while(removedServiceKeySet.size() < 4);
+//
+//
+//
+//			for (String key : removedServiceKeySet) {
+//				removedServiceSet.add(serviceMap.get(key));
+//				serviceMap.remove(key);
+//			}
+			
+			for(Service s : commonRemovedServices){
+				removedServiceSet.add(s);
+				serviceMap.remove(s.toString());
 			}
 			
-
-			/**
+			/** 
 			 * print out status after removal
 			 */
 			changedServiceMapSize = serviceMap.size();
@@ -320,18 +344,11 @@ public class RepairingExperiment3 {
 				Concept concept = conceptMap.get(key);
 				concept.getOriginServiceSet().clear();
 			}
-			/**
-			 * prune PG
-			 */
-			RefinementAlgorithm.refineSolution(pg);
 
-			/**
-			 * reserve old PG status
-			 */
-			PlanningGraph oldpg = pg.clone();
 			
+			Date removalStart = new Date();
 			/**
-			 * remove related services in PG
+			 * remove services in PG
 			 */
 			Set<Concept> bp = RemovalAlgorithm.removeServcesFromPG(pg, removedServiceSet);
 			
@@ -355,7 +372,7 @@ public class RepairingExperiment3 {
 					Concept concept = conceptMap.get(key);
 					concept.getOriginServiceSet().clear();
 				}
-				Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
+				Vector<Integer> routesCounters = BackwardSearchAlgorithm.extractSolution(pg);
 				Date refineEnd = new Date(); // refinement end checkpoint
 
 				/**
@@ -379,7 +396,7 @@ public class RepairingExperiment3 {
 				}
 				System.out.println("\n=================Status=================");
 				System.out.println("Total(including PG) Composition Time: "
-						+ (refineEnd.getTime() - refineStart.getTime()) + "ms");
+						+ (refineEnd.getTime() - removalStart.getTime()) + "ms");
 				System.out.println("Execution Length: "
 						+ (pg.getALevels().size() - 1));
 				System.out.println("Services Invoked: " + invokedServiceCount);
@@ -401,7 +418,10 @@ public class RepairingExperiment3 {
 //				System.out.println("\npg has " + (pg.getALevels().size()-1) + " action levels\n");
 				
 				Date repairStart = new Date();
-				if(RepairAlgorithm.repairForward(pg, serviceMap, conceptMap, thingMap, paramMap)){
+				
+//				if(RepairAlgorithm.repair(pg, serviceMap, conceptMap, thingMap, paramMap)){
+				
+				if(RepairAlgorithm.repairICWS(pg, serviceMap, conceptMap, thingMap, paramMap)){
 					System.out.println("Repair Succeed!");
 
 					System.out.println();
@@ -433,7 +453,7 @@ public class RepairingExperiment3 {
 						Concept concept = conceptMap.get(key);
 						concept.getOriginServiceSet().clear();
 					}
-					Vector<Integer> routesCounters = RefinementAlgorithm.refineSolution(pg);
+					Vector<Integer> routesCounters = BackwardSearchAlgorithm.extractSolution(pg);
 					Date refineEnd = new Date(); // refine end checkpoint
 
 					
@@ -487,9 +507,6 @@ public class RepairingExperiment3 {
 		} else {
 			System.out.println("\n=========Goal @NOT@ Found=========");
 		}
-
-
-		
 
 	}
 

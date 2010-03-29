@@ -38,7 +38,7 @@ public class TestRepairingMain {
 
 	// change the Prefix URL according your environment
 	//static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset05/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset04/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC/WSC08_Dataset/Testset04/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
 	// static final String WSLA_URL = PREFIX_URL +

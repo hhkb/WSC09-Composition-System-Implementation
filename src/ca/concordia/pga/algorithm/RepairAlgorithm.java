@@ -7,9 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
-import ca.concordia.pga.algorithm.utils.PGValidator;
 import ca.concordia.pga.algorithm.utils.RepairingEvaluator;
 import ca.concordia.pga.models.Concept;
 import ca.concordia.pga.models.Param;
@@ -33,7 +31,7 @@ public class RepairAlgorithm {
 	};
 
 
-	public static boolean repairRevised(PlanningGraph pg,
+	public static boolean repairICWS(PlanningGraph pg,
 			Map<String, Service> serviceMap, Map<String, Concept> conceptMap,
 			Map<String, Thing> thingMap, Map<String, Param> paramMap) {
 
@@ -61,9 +59,9 @@ public class RepairAlgorithm {
 			do {
 				/**
 				 * 1. compute currentSubGoalSet which contains all broken
-				 * preconditions and unstatisfied goals that need to be
-				 * statisfied right in current PLevel (level n). Initially, this
-				 * set will contains all unstatisfied goals only.
+				 * preconditions and unsatisfied goals that need to be
+				 * satisfied right in current PLevel (level n). Initially, this
+				 * set will contains all unsatisfied goals only.
 				 */
 
 				/**
@@ -190,15 +188,14 @@ public class RepairAlgorithm {
 							+ currentLevel);
 					System.out.println("sortedCandidates size: "
 							+ sortedCandidates.size());
-					// System.out.println("CurrentSubGoalSet size: " +
-					// currentSubGoalSet.size());
+
 				}
 
 			} while (currentSubGoalSet.size() != 0
 					& sortedCandidates.size() > 0);
 
 			/**
-			 * if currentSubGoalSet cannot be satisfied, return unrepairable
+			 * if currentSubGoalSet cannot be satisfied, return non-reparable
 			 */
 			if (currentSubGoalSet.size() != 0) {
 				return false;
@@ -209,9 +206,6 @@ public class RepairAlgorithm {
 			 * unsatisfied goals based on current PG status, if empty return PG
 			 */
 
-			if(currentLevel == 2){
-				System.out.println();
-			}
 			/**
 			 * compute subGoalSet based on current PG status
 			 */
@@ -221,7 +215,7 @@ public class RepairAlgorithm {
 				/**
 				 * Upon success: Start from level 1 while level < levels.size() 1.
 				 * select each service in current ALevel, removed all its duplicate in
-				 * higher ALevel. 2. increse level count by 1
+				 * higher ALevel. 2. Increase level count by 1
 				 */
 
 				currentLevel = 1;
@@ -243,8 +237,6 @@ public class RepairAlgorithm {
 					}
 					currentLevel++;
 				}
-
-				removeEmptyLevels(pg);
 				
 				return true;
 			}
@@ -255,17 +247,6 @@ public class RepairAlgorithm {
 			 */
 			currentLevel--;
 
-			/**
-			 * 6. if level == 0, insert a new PLevel which contains only the
-			 * given concepts to Level 0 (all current Plevel number increased by
-			 * 1), increse level count by 1.
-			 */
-			// if(currentLevel == 0){
-			// pg.insertPLevel(0, new HashSet<Concept>());
-			// pg.getPLevel(0).addAll(pg.getGivenConceptSet());
-			// pg.insertALevel(0, new HashSet<Service>());
-			// currentLevel++;
-			// }
 
 		}
 
@@ -500,7 +481,7 @@ public class RepairAlgorithm {
 	 * @param paramMap
 	 * @return
 	 */
-	public static boolean repair(PlanningGraph pg,
+	public static boolean repairSERA(PlanningGraph pg,
 			Map<String, Service> serviceMap, Map<String, Concept> conceptMap,
 			Map<String, Thing> thingMap, Map<String, Param> paramMap) {
 
@@ -523,9 +504,9 @@ public class RepairAlgorithm {
 			do {
 				/**
 				 * 1. compute currentSubGoalSet which contains all broken
-				 * preconditions and unstatisfied goals that need to be
-				 * statisfied right in current PLevel (level n). Initially, this
-				 * set will contains all unstatisfied goals only.
+				 * preconditions and unsatisfied goals that need to be
+				 * satisfied right in current PLevel (level n). Initially, this
+				 * set will contains all unsatisfied goals only.
 				 */
 
 				/**
@@ -601,8 +582,8 @@ public class RepairAlgorithm {
 				/**
 				 * 3. Insert first service in candidate list to current ALevel.
 				 * Add its outputs to PLevel(n). Check if PLevel(n) still has
-				 * unstatisfied subgoals. if yes, repeat step 1 unless
-				 * candidates list become empty then return unrepairable.
+				 * unsatisfied subgoals. if yes, repeat step 1 unless
+				 * candidates list become empty then return non-reparable.
 				 */
 				if (sortedCandidates.size() == 0) {
 					return false;
@@ -621,14 +602,12 @@ public class RepairAlgorithm {
 						+ candidate.getScore() + ")" + " at: " + currentLevel);
 				System.out.println("sortedCandidates size: "
 						+ sortedCandidates.size());
-				// System.out.println("CurrentSubGoalSet size: " +
-				// currentSubGoalSet.size());
 
 			} while (currentSubGoalSet.size() != 0
 					& sortedCandidates.size() > 0);
 
 			/**
-			 * if currentSubGoalSet cannot be satisfied, return unrepairable
+			 * if currentSubGoalSet cannot be satisfied, return non-repairable
 			 */
 			if (currentSubGoalSet.size() != 0) {
 				return false;
@@ -655,8 +634,8 @@ public class RepairAlgorithm {
 
 			/**
 			 * 6. if level == 0, insert a new PLevel which contains only the
-			 * given concepts to Level 0 (all current Plevel number increased by
-			 * 1), increse level count by 1.
+			 * given concepts to Level 0 (all current PLevel number increased by
+			 * 1), increase level count by 1.
 			 */
 			if (currentLevel == 0) {
 				pg.insertPLevel(0, new HashSet<Concept>());
@@ -670,7 +649,7 @@ public class RepairAlgorithm {
 		/**
 		 * Upon success: Start from level 1 while level < levels.size() 1.
 		 * select each service in current ALevel, removed all its duplicate in
-		 * higher ALevel. 2. increse level count by 1
+		 * higher ALevel. 2. Increase level count by 1
 		 */
 
 		currentLevel = 1;
@@ -812,7 +791,7 @@ public class RepairAlgorithm {
 
 
 	/**
-	 * remove empty levels from given pg
+	 * remove empty levels from the given PG
 	 * @param pg
 	 */
 	private static void removeEmptyLevels(PlanningGraph pg){

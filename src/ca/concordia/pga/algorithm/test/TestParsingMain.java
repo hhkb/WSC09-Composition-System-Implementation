@@ -1,6 +1,7 @@
 package ca.concordia.pga.algorithm.test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.dom4j.io.XMLWriter;
 
 import ca.concordia.pga.algorithm.utils.CombinationHelper;
 import ca.concordia.pga.algorithm.utils.PGValidator;
+import ca.concordia.pga.algorithm.utils.SolutionChecker;
 import ca.concordia.pga.models.*;
 import de.vs.unikassel.generator.converter.bpel_creator.BPEL_Creator;
 
@@ -36,7 +38,7 @@ public class TestParsingMain {
 
 	// change the Prefix URL according your environment
 //	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC2009_Testsets/Testset04/";
-	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC08_Dataset/Testset01/";
+	static final String PREFIX_URL = "/Users/ericzhao/Desktop/WSC/WSC08_Dataset/Testset01/";
 	static final String TAXONOMY_URL = PREFIX_URL + "Taxonomy.owl";
 	static final String SERVICES_URL = PREFIX_URL + "Services.wsdl";
 	// static final String WSLA_URL = PREFIX_URL +
@@ -333,7 +335,12 @@ public class TestParsingMain {
 		Element sequenceRoot = solution.addElement("sequence");
 		for (int i = 1; i < pg.getALevels().size(); i++) {
 			Set<Service> actionLevel = pg.getALevel(i);
-			Element parallel = sequenceRoot.addElement("parallel");
+			Element parallel;
+			if(actionLevel.size() > 1){
+				parallel = sequenceRoot.addElement("parallel");
+			}else{
+				parallel = sequenceRoot;				
+			}
 			for (Service s : actionLevel) {
 				Element serviceDesc = parallel.addElement("serviceDesc");
 				Element abstraction = serviceDesc.addElement("abstraction");
@@ -804,7 +811,7 @@ public class TestParsingMain {
 			 * do backward search to remove redundancy (pruning PG)
 			 */
 			Vector<Integer> routesCounters = refineSolution(pg);
-			Date refineEnd = new Date(); //refinement end checkpoint
+			Date backwardEnd = new Date(); 
 			
 			System.out.println();
 			System.out.println("===================================");
@@ -823,46 +830,37 @@ public class TestParsingMain {
 			}
 			System.out.println("\n=================Status=================");
 			System.out.println("Total(including PG) Composition Time: "
-					+ (refineEnd.getTime() - compStart.getTime()) + "ms");
+					+ (backwardEnd.getTime() - compStart.getTime()) + "ms");
 			System.out.println("Execution Length: "
 					+ (pg.getALevels().size() - 1));
 			System.out.println("Services Invoked: " + invokedServiceCount);			
 			System.out.println("==================End===================");
 
-			/**
-			 * generate solution file
-			 */
+//			/**
+//			 * generate solution file
+//			 */
+//			System.out.println("BPEL Generator: Generating BPEL Solution...");			
 //			try {
 //				generateSolution(pg);
 //			} catch (IOException e) {
 //				e.printStackTrace();
 //			}
-
+//			System.out.println("Checker: checking the BPEL Solution...");			
+//
+//			
+//			/**
+//			 * official checker
+//			 */
+//			SolutionChecker checker = new SolutionChecker();
+//			checker.check(PREFIX_URL);
+//			
+//			System.out.println("Validator: validating planning graph...");		
+			
 			/**
 			 * validate PG
 			 */
-			if(PGValidator.validate(pg, serviceMap, conceptMap, thingMap, paramMap)){
-				System.out.println("\nPG is VALID!");
-			}else{
-				System.out.println("\nPG is NOT VALID!");
-			}
-			
-			if(PGValidator.validateGivenConcepts(pg, givenConceptSet)){
-				System.out.println("\nGivenConcepts is VALID!");
-			}else{
-				System.out.println("\nGivenConcepts is NOT VALID!");
-			}
-			
-			if(PGValidator.validateGoalConcepts(pg, pg.getGoalSet())){
-				System.out.println("\nGoalConcepts is VALID!");
-			}else{
-				System.out.println("\nGoalConcepts is NOT VALID!");
-			}
-			
-			Service s1 = serviceMap.get("serv1889934289");
-			if(s1.getOutputConceptSet().contains("con2016714916")){
-				System.out.println("contains con2016714916");
-			}
+			PGValidator.comboValidate(pg, serviceMap, conceptMap, thingMap, paramMap, givenConceptSet);
+		
 		} else {
 			System.out.println("\n=========Goal @NOT@ Found=========");
 		}

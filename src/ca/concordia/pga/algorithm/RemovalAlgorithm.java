@@ -14,6 +14,12 @@ import ca.concordia.pga.models.Service;
  */
 public class RemovalAlgorithm {
 
+	/**
+	 * remove the given set of services from PG
+	 * @param pg
+	 * @param removedServiceSet
+	 * @return brokenPreConditionSet
+	 */
 	public static Set<Concept> removeServcesFromPG(PlanningGraph pg,
 			Set<Service> removedServiceSet){
 		Set<Concept> brokenPreConditionSet = new HashSet<Concept>();
@@ -21,7 +27,7 @@ public class RemovalAlgorithm {
 		Set<Concept> knownConceptSet = new HashSet<Concept>();
 		
 		/**
-		 * remove removed services from the provideby/usedby list of each concept
+		 * remove removed services from the "provideby" and "usedby" lists of each concept
 		 */
 		for(Concept c : conceptsInPG){
 			c.getUsedByServices().removeAll(removedServiceSet);
@@ -29,7 +35,7 @@ public class RemovalAlgorithm {
 		}
 		
 		/**
-		 * remove removed services from PG
+		 * remove the removed services from PG
 		 * rebuild pLevels and return brokenPreconditions
 		 */
 		int currentLevel = 1;
