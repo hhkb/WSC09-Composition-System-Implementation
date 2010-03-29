@@ -148,7 +148,7 @@ public class BackwardSearchAlgorithm {
 
 		Set<Service> smallestServiceSet;
 		Set<Concept> subGoalSet = new HashSet<Concept>();
-		subGoalSet.addAll(pg.getGoalSet());
+		subGoalSet.addAll(pg.getGoalSet()); //initially, subGoalSet contains goals
 		
 		Set<Concept> deferredGoalSet = new HashSet<Concept>(); //subgoals not need to be satisfied at current level
 		Set<Set<Service>> routes = new HashSet<Set<Service>>(); //all alternative routers (hitting sets) for current level
@@ -236,17 +236,7 @@ public class BackwardSearchAlgorithm {
 		 * remove invalid concepts after pruning services
 		 */
 		pg.regeneratePLevels();
-//		int currentLevel = 1;
-//		do{
-//			Set<Concept> knownConceptSet = new HashSet<Concept>();
-//			knownConceptSet.addAll(pg.getPLevel(currentLevel-1));
-//			for(Service s : pg.getALevel(currentLevel)){
-//				knownConceptSet.addAll(s.getOutputConceptSet());
-//			}
-//			pg.getPLevel(currentLevel).clear();
-//			pg.getPLevel(currentLevel).addAll(knownConceptSet);
-//			currentLevel++;
-//		}while(currentLevel < pg.getALevels().size());
+
 		
 		/**
 		 * Debugging purpose, checking if solution is valid
@@ -256,7 +246,7 @@ public class BackwardSearchAlgorithm {
 		}
 		
 		
-//		removeEmptyLevels(pg); //not happen in WSC dataset
+//		removeEmptyLevels(pg); //used in ICWS repairing
 		
 		return routeCounters; 
 	}
