@@ -9,4 +9,4 @@ improve planning graph algorithm.
 
 h1. How do I give comments/suggestions/questions?
 
-Please send me a email at: Happy.Hacking.Geek {at} Gmail.com
+Please send me a email at: ludeng.zhao {at} Gmail.com
